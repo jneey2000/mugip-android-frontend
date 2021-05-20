@@ -1,0 +1,2 @@
+rootProject.name = "Mugip App"
+include ':app'
