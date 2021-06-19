@@ -2,8 +2,12 @@
     <string name="app_name">Mugip App</string>
     <string name="forgot_password">비밀번호 찾기</string>
     <string name="sign_in">가입하기</string>
-    <string name="auto_login">로그인 유지</string>
+    <string name="auto_login">자동 로그인</string>
+    <string name="login_title">Mugip 로그인</string>
     <string name="login">로그인</string>
     <string name="id">아이디</string>
     <string name="password">비밀번호</string>
+    <string name="find_account">아이디 찾기 | 비밀번호 찾기</string>
+    <string name="naver_login">Naver</string>
+    <string name="google_login">Google</string>
 </resources>
