@@ -1,7 +1,10 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'com.google.gms.google-services'
 }
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 android {
     compileSdkVersion 30
@@ -15,12 +18,28 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "Naver_Client_ID", properties['naver_client_id']
+        buildConfigField "String", "Naver_Client_Secret", properties['naver_client_secret']
+        buildConfigField "String", "Naver_Client_Name", properties['naver_client_name']
+    }
+
+    signingConfigs{
+        releaseWithSignedKey {
+            storeFile file(SIGNED_STORE_FILE)
+            storePassword SIGNED_STORE_PASSWORD
+            keyAlias SIGNED_KEY_ALIAS
+            keyPassword SIGNED_KEY_PASSWORD
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfigs.releaseWithSignedKey
+        }
+        debug {
+            signingConfigs.releaseWithSignedKey
         }
     }
     compileOptions {
@@ -41,8 +60,9 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'com.google.firebase:firebase-auth:21.0.1'
     implementation 'com.google.android.gms:play-services-auth:19.0.0'
-    implementation 'com.shobhitpuri.custombuttons:google-signin:1.1.0'
+    implementation files('libs/naveridlogin_android_sdk_4.2.6.aar')
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
+
