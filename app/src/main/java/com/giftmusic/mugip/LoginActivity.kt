@@ -1,28 +1,26 @@
 package com.giftmusic.mugip
 
-import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ContentValues.TAG
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import java.security.MessageDigest
-
+import com.kakao.sdk.auth.model.OAuthToken
+import com.kakao.sdk.common.util.Utility
+import com.kakao.sdk.user.UserApiClient
 
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        hashKey()
         val kakaoLoginButton : Button = findViewById(R.id.btn_login_kakao)
         val googleLoginButton : Button = findViewById(R.id.btn_login_google)
         val emailLoginButton : Button = findViewById(R.id.btn_login_email)
@@ -37,15 +35,31 @@ class LoginActivity : AppCompatActivity() {
         override fun onClick(v: View?) {
             when(v?.id){
                 R.id.btn_login_kakao -> {
+                    if (UserApiClient.instance.isKakaoTalkLoginAvailable(this@LoginActivity)) {
+                        UserApiClient.instance.loginWithKakaoTalk(this@LoginActivity, callback=kakaoCallback)
 
+                    } else {
+                        UserApiClient.instance.loginWithKakaoAccount(this@LoginActivity, callback=kakaoCallback)
+                    }
                 }
 
                 R.id.btn_login_google -> {
-                    startActivityForResult(googleSignInIntent, RESULT_CODE)
+                    val requestActivity : ActivityResultLauncher<Intent> = registerForActivityResult(
+                        startActivityForResult()
+                    )
                 }
                 R.id.btn_login_email -> {}
                 R.id.btn_signup -> {}
             }
+        }
+    }
+
+    val kakaoCallback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
+        if (error != null) {
+            Log.e(TAG, "로그인 실패", error)
+        }
+        else if (token != null) {
+            Log.i(TAG, "로그인 성공 ${token.accessToken}")
         }
     }
 
@@ -76,19 +90,6 @@ class LoginActivity : AppCompatActivity() {
                     // 에러 처리
                 }
             }
-        }
-    }
-
-    private fun hashKey() {
-        try {
-            val pkinfo = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNATURES)
-            for (signature in pkinfo.signatures) {
-                val messageDigest: MessageDigest = MessageDigest.getInstance("SHA")
-                messageDigest.update(signature.toByteArray())
-                val result: String = String(Base64.encode(messageDigest.digest(), 0))
-                Log.d("해시", result)
-            }
-        } catch (e: Exception) {
         }
     }
 }
