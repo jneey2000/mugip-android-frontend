@@ -23,8 +23,6 @@ class LoginActivity : AppCompatActivity() {
         val emailLoginButton : Button = findViewById(R.id.btn_login_email)
         val signUpButton : Button = findViewById(R.id.btn_signup)
 
-        val keyHash: String = Utility.getKeyHash(this)
-        Log.d("key", keyHash)
         // 네이버 로그인
         kakaoLoginButton.setOnClickListener(LoginButtonListener())
         googleLoginButton.setOnClickListener(LoginButtonListener())
