@@ -1,24 +1,17 @@
 package com.giftmusic.mugip
 
-import android.app.Activity
+import android.app.AlertDialog
 import android.content.ContentValues.TAG
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.auth.api.Auth
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
 import com.kakao.sdk.auth.model.OAuthToken
-import com.kakao.sdk.common.util.Utility
 import com.kakao.sdk.user.UserApiClient
+import com.kakao.sdk.common.util.Utility
 
 class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,10 +22,14 @@ class LoginActivity : AppCompatActivity() {
         val googleLoginButton : Button = findViewById(R.id.btn_login_google)
         val emailLoginButton : Button = findViewById(R.id.btn_login_email)
         val signUpButton : Button = findViewById(R.id.btn_signup)
-        
+
+        val keyHash: String = Utility.getKeyHash(this)
+        Log.d("key", keyHash)
         // 네이버 로그인
         kakaoLoginButton.setOnClickListener(LoginButtonListener())
         googleLoginButton.setOnClickListener(LoginButtonListener())
+        emailLoginButton.setOnClickListener(LoginButtonListener())
+        signUpButton.setOnClickListener(LoginButtonListener())
     }
 
     inner class LoginButtonListener : View.OnClickListener{
@@ -59,9 +56,28 @@ class LoginActivity : AppCompatActivity() {
     val kakaoCallback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
         if (error != null) {
             Log.e(TAG, "로그인 실패", error)
+            showFailToLoginDialog()
         }
         else if (token != null) {
-            Log.i(TAG, "로그인 성공 ${token.accessToken}")
+            moveToMainActivity()
         }
+    }
+
+    // 로그인 실패할 때
+    private fun showFailToLoginDialog(){
+        val dialogBuilder = AlertDialog.Builder(this)
+            .setTitle("로그인 실패")
+            .setMessage("로그인에 실패했습니다.")
+            .setPositiveButton("뒤로 가기", DialogInterface.OnClickListener(){
+                    _: DialogInterface, _: Int ->
+            })
+        val dialog = dialogBuilder.create()
+        dialog.show()
+    }
+
+    private fun moveToMainActivity(){
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }
