@@ -15,10 +15,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.GoogleAuthProvider
 import com.kakao.sdk.auth.model.OAuthToken
-import com.kakao.sdk.user.UserApiClient
 import com.kakao.sdk.common.util.Utility.getKeyHash
+import com.kakao.sdk.user.UserApiClient
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var auth : FirebaseAuth
@@ -65,7 +64,12 @@ class LoginActivity : AppCompatActivity() {
                     val signInIntent = googleSignInClient.signInIntent
                     startActivityForResult(signInIntent, 9001)
                 }
-                R.id.btn_login_email -> {}
+                R.id.btn_login_email -> {
+                    val intent = Intent(this@LoginActivity, LoginActivityEmail::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_TASK_ON_HOME
+                    startActivity(intent)
+                    finish()
+                }
                 R.id.btn_signup -> {}
             }
         }
