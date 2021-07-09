@@ -34,7 +34,6 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "kakao_api_key", properties['NATIVE_APP_KEY']
-        buildConfigField "String", "google_api_key", properties['FIREBASE_WEB_API_KEY']
         signingConfig signingConfigs.releaseWithSignedKey
     }
 
