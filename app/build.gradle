@@ -7,8 +7,8 @@ Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    compileSdkVersion 'android-S'
+    buildToolsVersion '30.0.3'
 
     defaultConfig {
         applicationId "com.giftmusic.mugip"
@@ -36,13 +36,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfigs.releaseWithSignedKey
             manifestPlaceholders = [
-                    mapKey: properties["MAPS_API_KEY"]
+                    mapKey: properties["MAPS_API_KEY"].toString()
             ]
         }
         debug {
             signingConfigs.releaseWithSignedKey
             manifestPlaceholders = [
-                    mapKey: properties["MAPS_API_KEY"]
+                    mapKey: properties["MAPS_API_KEY"].toString()
             ]
         }
     }
