@@ -10,6 +10,21 @@ android {
     compileSdkVersion 'android-S'
     buildToolsVersion '30.0.3'
 
+    signingConfigs{
+        debugWithSignedKey {
+            storeFile file(SIGNED_STORE_FILE)
+            storePassword SIGNED_STORE_PASSWORD
+            keyAlias SIGNED_KEY_ALIAS
+            keyPassword SIGNED_KEY_PASSWORD
+        }
+        releaseWithSignedKey {
+            storeFile file(SIGNED_STORE_FILE)
+            storePassword SIGNED_STORE_PASSWORD
+            keyAlias SIGNED_KEY_ALIAS
+            keyPassword SIGNED_KEY_PASSWORD
+        }
+    }
+
     defaultConfig {
         applicationId "com.giftmusic.mugip"
         minSdkVersion 23
@@ -19,28 +34,20 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField "String", "kakao_api_key", properties['NATIVE_APP_KEY']
-    }
-
-    signingConfigs{
-        releaseWithSignedKey {
-            storeFile file(properties["SIGNED_STORE_FILE"])
-            storePassword properties["SIGNED_STORE_PASSWORD"]
-            keyAlias properties["SIGNED_KEY_ALIAS"]
-            keyPassword properties["SIGNED_KEY_PASSWORD"]
-        }
+        buildConfigField "String", "google_api_key", properties['MAPS_API_KEY']
+        signingConfig signingConfigs.releaseWithSignedKey
     }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfigs.releaseWithSignedKey
             manifestPlaceholders = [
                     mapKey: properties["MAPS_API_KEY"].toString()
             ]
         }
         debug {
-            signingConfigs.releaseWithSignedKey
+            signingConfig signingConfigs.debugWithSignedKey
             manifestPlaceholders = [
                     mapKey: properties["MAPS_API_KEY"].toString()
             ]
