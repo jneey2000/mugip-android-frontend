@@ -6,6 +6,8 @@ import android.content.ContentValues.TAG
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
@@ -17,12 +19,10 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 
 
@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
 
     private val permissionRequestCode = 100
     var needRequest = false
+
     private val requiredPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
@@ -172,16 +173,19 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         if(currentLocation != null){
             currentLocation!!.remove()
         }
+        val markerImage = ResourcesCompat.getDrawable(resources, R.drawable.marker, null) as BitmapDrawable
+        val bitmapMarker = Bitmap.createScaledBitmap(markerImage.bitmap, 500, 500, false)
         val currentLatLng = LatLng(location.latitude, location.longitude)
         val markerOptions = MarkerOptions()
         markerOptions.position(currentLatLng)
         markerOptions.title(markerTitle)
         markerOptions.snippet(markerSnippet)
         markerOptions.draggable(true)
+        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmapMarker))
         if(map!=null){
-            currentLocation = map!!.addMarker(markerOptions)!!
             val cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLatLng, 16F)
             map!!.moveCamera(cameraUpdate)
+            currentLocation = map!!.addMarker(markerOptions)!!
         }
     }
 
@@ -194,12 +198,14 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         if(currentLocation != null){
             currentLocation!!.remove()
         }
+        val markerImage = ResourcesCompat.getDrawable(resources, R.drawable.marker, null) as BitmapDrawable
+        val bitmapMarker = Bitmap.createScaledBitmap(markerImage.bitmap, 500, 500, false)
         val markerOptions = MarkerOptions()
         markerOptions.position(defaultLocation)
         markerOptions.title(markerTitle)
         markerOptions.snippet(markerSnippet)
         markerOptions.draggable(true)
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmapMarker))
         if(map!=null){
             currentLocation = map!!.addMarker(markerOptions)!!
             val cameraUpdate = CameraUpdateFactory.newLatLngZoom(defaultLocation, 16F)
