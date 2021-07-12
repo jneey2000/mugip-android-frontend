@@ -16,6 +16,7 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -108,7 +109,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
 
         // 현재 위치로 이동할 수 있는 버튼 추가
         if(map != null){
-            map!!.uiSettings.isMyLocationButtonEnabled = true
+            val currentLocationButton = findViewById<ImageView>(R.id.ic_location).setOnClickListener {
+                mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+            }
         }
     }
 
@@ -150,7 +153,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
             Log.d(TAG, "onStart : call mFusedLocationClient.requestLocationUpdates")
             mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
             if(map != null){
-                map!!.isMyLocationEnabled = true
+                map!!.isMyLocationEnabled = false;
+                map!!.uiSettings.isMyLocationButtonEnabled = false;
             }
         }
     }
