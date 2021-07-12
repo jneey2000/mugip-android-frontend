@@ -109,6 +109,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
 
         // 현재 위치로 이동할 수 있는 버튼 추가
         if(map != null){
+            map!!.uiSettings.isMyLocationButtonEnabled = false
+            map!!.isMyLocationEnabled = false
             val currentLocationButton = findViewById<ImageView>(R.id.ic_location).setOnClickListener {
                 mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
             }
