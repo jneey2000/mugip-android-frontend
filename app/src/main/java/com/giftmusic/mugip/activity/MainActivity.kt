@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
             if(locationList.isNotEmpty()){
                 location = locationList[locationList.size-1]
                 currentPosition = LatLng(location.latitude, location.longitude)
-                setCurrentLocation(location, "현재 위치", "마커 내용")
+                setCurrentLocation(location)
             }
         }
     }
@@ -210,7 +210,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
     }
 
 
-    fun setCurrentLocation(location: Location, markerTitle: String?, markerSnippet: String?) {
+    fun setCurrentLocation(location: Location) {
         if(currentLocation != null){
             currentLocation!!.remove()
         }
@@ -240,8 +240,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
 
                     val markerOptions = MarkerOptions()
                     markerOptions.position(it.location)
-                    markerOptions.title(markerTitle)
-                    markerOptions.snippet(markerSnippet)
                     markerOptions.draggable(true)
                     markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap))
                     otherUserMarkers.add(markerOptions)
