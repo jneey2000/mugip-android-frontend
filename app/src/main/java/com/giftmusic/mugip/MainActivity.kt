@@ -7,6 +7,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.location.Location
 import android.location.LocationManager
@@ -29,7 +30,7 @@ import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
     private var map : GoogleMap? = null
-    private var currentLocation : Marker? = null
+    private var currentLocation : Circle? = null
 
     private val locationRequestCode = 2001
     private val locationUpdateInterval = 1L
@@ -110,7 +111,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         // 현재 위치로 이동할 수 있는 버튼 추가
         if(map != null){
             map!!.uiSettings.isMyLocationButtonEnabled = false
-            map!!.isMyLocationEnabled = false
             val currentLocationButton = findViewById<ImageView>(R.id.ic_location).setOnClickListener {
                 mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
             }
@@ -155,7 +155,6 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
             Log.d(TAG, "onStart : call mFusedLocationClient.requestLocationUpdates")
             mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
             if(map != null){
-                map!!.isMyLocationEnabled = false;
                 map!!.uiSettings.isMyLocationButtonEnabled = false;
             }
         }
@@ -179,19 +178,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         if(currentLocation != null){
             currentLocation!!.remove()
         }
-        val markerImage = ResourcesCompat.getDrawable(resources, R.drawable.marker, null) as BitmapDrawable
-        val bitmapMarker = Bitmap.createScaledBitmap(markerImage.bitmap, 500, 500, false)
         val currentLatLng = LatLng(location.latitude, location.longitude)
-        val markerOptions = MarkerOptions()
-        markerOptions.position(currentLatLng)
-        markerOptions.title(markerTitle)
-        markerOptions.snippet(markerSnippet)
-        markerOptions.draggable(true)
-        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmapMarker))
+        val circleOption = CircleOptions().center(currentLatLng).fillColor(Color.parseColor("#556B63FF")).radius(100.0).strokeWidth(0f)
         if(map!=null){
             val cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLatLng, 16F)
             map!!.moveCamera(cameraUpdate)
-            currentLocation = map!!.addMarker(markerOptions)!!
+            currentLocation = map!!.addCircle(circleOption)
         }
     }
 
@@ -199,23 +191,15 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
     private fun setDefaultLocation() {
         //디폴트 위치, Seoul
         val defaultLocation = LatLng(37.29685208641291, 126.83724122364636)
-        val markerTitle = "위치정보 가져올 수 없음"
-        val markerSnippet = "위치 퍼미션과 GPS 활성 여부를 확인해주세요."
         if(currentLocation != null){
             currentLocation!!.remove()
         }
-        val markerImage = ResourcesCompat.getDrawable(resources, R.drawable.marker, null) as BitmapDrawable
-        val bitmapMarker = Bitmap.createScaledBitmap(markerImage.bitmap, 500, 500, false)
-        val markerOptions = MarkerOptions()
-        markerOptions.position(defaultLocation)
-        markerOptions.title(markerTitle)
-        markerOptions.snippet(markerSnippet)
-        markerOptions.draggable(true)
-        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmapMarker))
+        val circleOption = CircleOptions().center(defaultLocation).fillColor(Color.parseColor("#556B63FF")).radius(100.0).strokeWidth(0f)
+
         if(map!=null){
-            currentLocation = map!!.addMarker(markerOptions)!!
             val cameraUpdate = CameraUpdateFactory.newLatLngZoom(defaultLocation, 16F)
             map!!.moveCamera(cameraUpdate)
+            currentLocation = map!!.addCircle(circleOption)
         }
     }
 
