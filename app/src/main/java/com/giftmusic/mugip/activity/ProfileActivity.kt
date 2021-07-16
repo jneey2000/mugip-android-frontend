@@ -6,6 +6,8 @@ import android.widget.Button
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.giftmusic.mugip.R
+import com.giftmusic.mugip.fragment.HistoryFragment
+import com.giftmusic.mugip.fragment.PlaylistFragment
 
 class ProfileActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,6 +24,8 @@ class ProfileActivity : AppCompatActivity() {
         val primaryColor = resources.getColor(R.color.primary)
         val whiteColor = Color.parseColor("#FFFFFF")
 
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
 
         when(intent.getIntExtra("initialFragment", 0)){
 
@@ -29,14 +33,18 @@ class ProfileActivity : AppCompatActivity() {
                 showHistoryButton.isSelected = true
                 showHistoryButton.setTextColor(primaryColor)
                 showPlaylistButton.setTextColor(whiteColor)
+                fragmentTransaction.add(R.id.profile_fragment, HistoryFragment())
+
             }
 
             1 -> {
                 showPlaylistButton.isSelected = true
                 showHistoryButton.setTextColor(whiteColor)
                 showPlaylistButton.setTextColor(primaryColor)
+                fragmentTransaction.add(R.id.profile_fragment, PlaylistFragment())
             }
         }
+        fragmentTransaction.commit()
 
         // 버튼 클릭시
         showHistoryButton.setOnClickListener {
@@ -44,6 +52,8 @@ class ProfileActivity : AppCompatActivity() {
             showPlaylistButton.setTextColor(whiteColor)
             showHistoryButton.isSelected = true
             showPlaylistButton.isSelected = false
+            fragmentTransaction.add(R.id.profile_fragment, HistoryFragment())
+            fragmentTransaction.commit()
         }
 
         showPlaylistButton.setOnClickListener {
@@ -51,6 +61,8 @@ class ProfileActivity : AppCompatActivity() {
             showPlaylistButton.setTextColor(primaryColor)
             showHistoryButton.isSelected = false
             showPlaylistButton.isSelected = true
+            fragmentTransaction.add(R.id.profile_fragment, PlaylistFragment())
+            fragmentTransaction.commit()
         }
 
         val followingButton = findViewById<Button>(R.id.following_button)
@@ -61,5 +73,7 @@ class ProfileActivity : AppCompatActivity() {
                 followingButton.text = "팔로우"
             }
         }
+
+
     }
 }
