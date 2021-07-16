@@ -7,6 +7,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.location.Location
@@ -22,29 +23,37 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import com.giftmusic.mugip.models.OtherUser
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.io.FileNotFoundException
+import java.net.HttpURLConnection
+import java.net.URL
 
 
 class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
+    // 구글 지도 및 현재 위치를 기준으로 한 반경원 객체
     private var map : GoogleMap? = null
     private var currentLocation : Circle? = null
 
+    // 워치 권한 요청을 위한 변수들
     private val locationRequestCode = 2001
     private val locationUpdateInterval = 1L
     private val locationUpdateIntervalFastest : Long = 0.5.toLong()
-
-
     private val permissionRequestCode = 100
-    var needRequest = false
-
+    private var needRequest = false
     private val requiredPermissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.ACCESS_COARSE_LOCATION
     )
 
+    // 위치 업데이트를 위한 변수들
     private lateinit var currentPosition: LatLng
     private val locationCallback = object: LocationCallback() {
         override fun onLocationResult(locationResult: LocationResult) {
@@ -63,6 +72,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
     private lateinit var location: Location
     private lateinit var mLayout : View
 
+    // 다른 사용자를 담기 위한 변수들
+    private val otherUsers = ArrayList<OtherUser>()
+    private val otherUserMarkers = ArrayList<MarkerOptions>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // 화면 계속 켜져 있게
@@ -79,8 +92,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         // 위치 얻기
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+        // 지도 Fragment
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+
+        otherUsers.add(OtherUser("https://raw.githubusercontent.com/Gift-Music/mugip-android-frontend/MVP/Jeongin/test_assets/user_1.png?token=ACQXZAY2XLEHCBD5Z7CXWDDA6DPJ2", LatLng(37.299914556000154, 126.8410831016941)))
     }
 
     override fun onMapReady(p0: GoogleMap) {
@@ -179,11 +195,44 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
             currentLocation!!.remove()
         }
         val currentLatLng = LatLng(location.latitude, location.longitude)
-        val circleOption = CircleOptions().center(currentLatLng).fillColor(Color.parseColor("#556B63FF")).radius(100.0).strokeWidth(0f)
+        val circleOption = CircleOptions().center(currentLatLng).fillColor(Color.parseColor("#556B63FF")).radius(2000.0).strokeWidth(0f)
         if(map!=null){
-            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLatLng, 16F)
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLatLng, 12F)
             map!!.moveCamera(cameraUpdate)
             currentLocation = map!!.addCircle(circleOption)
+            otherUserMarkers.clear()
+            val refreshOtherUser = GlobalScope.launch {
+                otherUsers.map {
+                    var bitmap : Bitmap
+                    try{
+                        val url = URL(it.imageUrl)
+                        val conn = url.openConnection() as HttpURLConnection;
+                        conn.doInput = true; // 서버로 부터 응답 수신
+                        conn.connect();
+
+                        val inputStream = conn.inputStream; // InputStream 값 가져오기
+                        bitmap = BitmapFactory.decodeStream(inputStream)
+                    } catch (e: FileNotFoundException){
+                        val markerImage = ResourcesCompat.getDrawable(resources, R.drawable.user_1, null) as BitmapDrawable
+                        bitmap = Bitmap.createScaledBitmap(markerImage.bitmap, 50, 50, false)
+                    }
+
+                    val markerOptions = MarkerOptions()
+                    markerOptions.position(it.location)
+                    markerOptions.title(markerTitle)
+                    markerOptions.snippet(markerSnippet)
+                    markerOptions.draggable(true)
+                    markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+                    otherUserMarkers.add(markerOptions)
+                }
+            }
+            runBlocking {
+                refreshOtherUser.join()
+            }
+            Log.d("Count of other users", otherUserMarkers.size.toString())
+            otherUserMarkers.map {
+                map!!.addMarker(it)
+            }
         }
     }
 
@@ -195,7 +244,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
             currentLocation!!.remove()
         }
         if(map!=null){
-            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(defaultLocation, 16F)
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(defaultLocation, 12F)
             map!!.moveCamera(cameraUpdate)
         }
     }
