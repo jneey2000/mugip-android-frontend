@@ -18,6 +18,8 @@ import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.Button
+import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -97,6 +99,26 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         mapFragment.getMapAsync(this)
 
         otherUsers.add(OtherUser("https://raw.githubusercontent.com/Gift-Music/mugip-android-frontend/MVP/Jeongin/test_assets/user_1.png?token=ACQXZAY2XLEHCBD5Z7CXWDDA6DPJ2", LatLng(37.299914556000154, 126.8410831016941)))
+        
+        // 상단 카테고리 버튼 동작
+        val selectedCategoryButton = findViewById<Button>(R.id.selected_category)
+        val selectCategoryAllButton = findViewById<Button>(R.id.select_category_all)
+        val selectCategoryExerciseButton = findViewById<Button>(R.id.select_category_exercise)
+        val selectCategoryWorkButton = findViewById<Button>(R.id.select_category_work)
+        val selectCategoryReadingButton = findViewById<Button>(R.id.select_category_reading)
+        val selectCategoryDriveButton = findViewById<Button>(R.id.select_category_drive)
+        val selectCategoryTripButton = findViewById<Button>(R.id.select_category_trip)
+        val selectCategoryProgrammingButton = findViewById<Button>(R.id.select_category_programming)
+        val selectCategoryShowerButton = findViewById<Button>(R.id.select_category_shower)
+        selectedCategoryButton.setOnClickListener(CategoryButtonListener())
+        selectCategoryAllButton.setOnClickListener(CategoryButtonListener())
+        selectCategoryExerciseButton.setOnClickListener(CategoryButtonListener())
+        selectCategoryWorkButton.setOnClickListener(CategoryButtonListener())
+        selectCategoryReadingButton.setOnClickListener(CategoryButtonListener())
+        selectCategoryDriveButton.setOnClickListener(CategoryButtonListener())
+        selectCategoryTripButton.setOnClickListener(CategoryButtonListener())
+        selectCategoryProgrammingButton.setOnClickListener(CategoryButtonListener())
+        selectCategoryShowerButton.setOnClickListener(CategoryButtonListener())
     }
 
     override fun onMapReady(p0: GoogleMap) {
@@ -316,6 +338,29 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
                     return
                 }
         }
+    }
+
+    inner class CategoryButtonListener : View.OnClickListener{
+        override fun onClick(v: View?) {
+            val categoryScrollView = findViewById<HorizontalScrollView>(R.id.select_category_scrollview)
+            val selectedCategoryButton = findViewById<Button>(R.id.selected_category)
+            when(v?.id){
+                R.id.selected_category ->{
+                    if(categoryScrollView.visibility == View.VISIBLE){
+                        categoryScrollView.visibility = View.INVISIBLE
+                    } else{
+                        categoryScrollView.visibility = View.VISIBLE
+                    }
+                }
+                else -> {
+                    if(categoryScrollView.visibility == View.VISIBLE){
+                        selectedCategoryButton.text = findViewById<Button>(v?.id!!).text
+                        categoryScrollView.visibility = View.INVISIBLE
+                    }
+                }
+            }
+        }
+
     }
 
 }
