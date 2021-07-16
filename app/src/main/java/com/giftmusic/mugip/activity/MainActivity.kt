@@ -124,7 +124,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         // 하단 메뉴 버튼
         val openProfileActivityButton = findViewById<ImageView>(R.id.ic_profile)
         openProfileActivityButton.setOnClickListener {
-            val intent = Intent(this, ProfileActivity::class.java)
+            val intent = Intent(this, ProfileActivity::class.java).putExtra("initialFragment", 0)
             startActivity(intent)
         }
     }
