@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
     // 구글 지도 및 현재 위치를 기준으로 한 반경원 객체
     private var map : GoogleMap? = null
     private var currentLocation : Circle? = null
+    private val defaultCameraPosition = LatLng(37.29685208641291, 126.83724122364636)
 
     // 워치 권한 요청을 위한 변수들
     private val locationRequestCode = 2001
@@ -121,8 +122,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         selectCategoryShowerButton.setOnClickListener(CategoryButtonListener())
     }
 
-    override fun onMapReady(p0: GoogleMap) {
-        map = p0
+    override fun onMapReady(map: GoogleMap) {
         // 위치 수신이 안될때를 대비해 default 위치로 이동
         setDefaultLocation()
         // 권한 확인
@@ -147,11 +147,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         }
 
         // 현재 위치로 이동할 수 있는 버튼 추가
-        if(map != null){
-            map!!.uiSettings.isMyLocationButtonEnabled = false
-            val currentLocationButton = findViewById<ImageView>(R.id.ic_location).setOnClickListener {
-                mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
-            }
+        map.uiSettings.isMyLocationButtonEnabled = false
+        val currentLocationButton = findViewById<ImageView>(R.id.ic_location).setOnClickListener {
+            mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
         }
     }
 
@@ -262,12 +260,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
 
     private fun setDefaultLocation() {
         //디폴트 위치, Seoul
-        val defaultLocation = LatLng(37.29685208641291, 126.83724122364636)
         if(currentLocation != null){
             currentLocation!!.remove()
         }
         if(map!=null){
-            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(defaultLocation, 12F)
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(defaultCameraPosition, 12F)
             map!!.moveCamera(cameraUpdate)
         }
     }
