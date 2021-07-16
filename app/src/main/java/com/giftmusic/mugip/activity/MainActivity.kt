@@ -120,6 +120,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         selectCategoryTripButton.setOnClickListener(CategoryButtonListener())
         selectCategoryProgrammingButton.setOnClickListener(CategoryButtonListener())
         selectCategoryShowerButton.setOnClickListener(CategoryButtonListener())
+        
+        // 하단 메뉴 버튼
+        val openProfileActivityButton = findViewById<ImageView>(R.id.ic_profile)
+        openProfileActivityButton.setOnClickListener {
+            val intent = Intent(this, ProfileActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -151,7 +158,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         if (map != null) {
             map!!.uiSettings.isMyLocationButtonEnabled = false
             findViewById<ImageView>(R.id.ic_location).setOnClickListener {
-                mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+                mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
             }
         }
     }
@@ -177,11 +184,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
                 return
             }
             Log.d(TAG, "startLocationUpdates : call mFusedLocationClient.requestLocationUpdates")
-            mFusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                Looper.myLooper()
-            )
+            mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
             if (checkPermission() && map != null) map!!.isMyLocationEnabled = true
         }
     }
@@ -192,7 +195,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         Log.d(TAG, "onStart")
         if (checkPermission()) {
             Log.d(TAG, "onStart : call mFusedLocationClient.requestLocationUpdates")
-            mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+            mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
             if(map != null){
                 map!!.uiSettings.isMyLocationButtonEnabled = false;
             }
@@ -316,12 +319,12 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
             """.trimIndent()
         )
         builder.setCancelable(true)
-        builder.setPositiveButton("설정", DialogInterface.OnClickListener { dialog, id ->
+        builder.setPositiveButton("설정", DialogInterface.OnClickListener { _, _ ->
             val callGPSSettingIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivityForResult(callGPSSettingIntent, locationRequestCode)
         })
         builder.setNegativeButton("취소",
-            DialogInterface.OnClickListener { dialog, id -> dialog.cancel() })
+            DialogInterface.OnClickListener { dialog, _ -> dialog.cancel() })
         builder.create().show()
     }
 
