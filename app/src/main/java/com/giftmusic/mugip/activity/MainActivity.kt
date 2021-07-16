@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
 
     // 워치 권한 요청을 위한 변수들
     private val locationRequestCode = 2001
-    private val locationUpdateInterval = 1L
+    private val locationUpdateInterval = 5L
     private val locationUpdateIntervalFastest : Long = 0.5.toLong()
     private val permissionRequestCode = 100
     private var needRequest = false
@@ -122,7 +122,8 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         selectCategoryShowerButton.setOnClickListener(CategoryButtonListener())
     }
 
-    override fun onMapReady(map: GoogleMap) {
+    override fun onMapReady(googleMap: GoogleMap) {
+        map = googleMap
         // 위치 수신이 안될때를 대비해 default 위치로 이동
         setDefaultLocation()
         // 권한 확인
@@ -147,9 +148,11 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         }
 
         // 현재 위치로 이동할 수 있는 버튼 추가
-        map.uiSettings.isMyLocationButtonEnabled = false
-        val currentLocationButton = findViewById<ImageView>(R.id.ic_location).setOnClickListener {
-            mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+        if (map != null) {
+            map!!.uiSettings.isMyLocationButtonEnabled = false
+            findViewById<ImageView>(R.id.ic_location).setOnClickListener {
+                mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+            }
         }
     }
 
