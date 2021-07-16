@@ -194,12 +194,9 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         if(currentLocation != null){
             currentLocation!!.remove()
         }
-        val circleOption = CircleOptions().center(defaultLocation).fillColor(Color.parseColor("#556B63FF")).radius(100.0).strokeWidth(0f)
-
         if(map!=null){
             val cameraUpdate = CameraUpdateFactory.newLatLngZoom(defaultLocation, 16F)
             map!!.moveCamera(cameraUpdate)
-            currentLocation = map!!.addCircle(circleOption)
         }
     }
 

@@ -15,6 +15,17 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
     />
 
+    <ImageView
+        android:id="@+id/ic_location"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/current_location_button"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="150dp"
+        />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="70dp"
@@ -27,7 +38,7 @@
         <androidx.cardview.widget.CardView
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            app:cardBackgroundColor="#FCFCD4"
+            app:cardBackgroundColor="#6B63FF"
             android:layout_weight="1"
             android:layout_marginHorizontal="10dp"
             app:cardCornerRadius="30dp"
@@ -37,7 +48,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginVertical="10dp"
+                android:layout_marginVertical="15dp"
+                android:layout_marginHorizontal="20dp"
                 >
                 <ImageView
                     android:id="@+id/ic_playlist"
@@ -48,11 +60,11 @@
                     />
 
                 <ImageView
-                    android:id="@+id/ic_location"
+                    android:id="@+id/center_button"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:src="@drawable/current_location_button"
+                    android:src="@drawable/center_button"
                     />
 
                 <ImageView
