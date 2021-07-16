@@ -52,5 +52,14 @@ class ProfileActivity : AppCompatActivity() {
             showHistoryButton.isSelected = false
             showPlaylistButton.isSelected = true
         }
+
+        val followingButton = findViewById<Button>(R.id.following_button)
+        followingButton.setOnClickListener{
+            if(followingButton.text == "팔로우") {
+                followingButton.text = "팔로잉"
+            } else {
+                followingButton.text = "팔로우"
+            }
+        }
     }
 }
