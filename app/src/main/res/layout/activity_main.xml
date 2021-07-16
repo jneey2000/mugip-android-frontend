@@ -15,6 +15,60 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
     />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginVertical="30dp"
+        android:layout_marginHorizontal="30dp"
+        android:layout_marginBottom="50dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal">
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/round_corner_search_bar"
+            android:drawableEnd="@drawable/search_bar_drawable_size"
+            android:paddingHorizontal="15dp"
+            />
+        <RelativeLayout
+            android:layout_width="40dp"
+            android:layout_marginStart="10dp"
+            android:layout_height="match_parent">
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_marginStart="10dp"
+                android:layout_height="match_parent"
+                android:src="@drawable/notification_icon" />
+
+            <TextView
+                android:id="@+id/notification_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="fitStart"
+                android:layout_marginEnd="0dp"
+                android:padding="2dp"
+                android:background="@drawable/notification_badge"
+                android:gravity="center"
+                android:minWidth="17sp"
+                android:adjustViewBounds="true"
+                android:minHeight="17sp"
+                android:paddingBottom="1dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:text="0"
+                android:textColor="#FF0000"
+                android:textSize="12sp"
+                android:visibility="visible"
+                android:layout_gravity="center_horizontal"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                />
+        </RelativeLayout>
+
+    </LinearLayout>
+
     <ImageView
         android:id="@+id/ic_location"
         android:layout_width="50dp"
@@ -38,7 +92,7 @@
         <androidx.cardview.widget.CardView
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            app:cardBackgroundColor="#6B63FF"
+            app:cardBackgroundColor="@color/primary"
             android:layout_weight="1"
             android:layout_marginHorizontal="10dp"
             app:cardCornerRadius="30dp"
