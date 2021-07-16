@@ -1,4 +1,4 @@
-package com.giftmusic.mugip
+package com.giftmusic.mugip.activity
 
 import android.app.AlertDialog
 import android.content.ContentValues.TAG
@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import com.giftmusic.mugip.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
