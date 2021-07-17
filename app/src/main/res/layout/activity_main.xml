@@ -38,6 +38,7 @@
             android:layout_marginStart="10dp"
             android:layout_height="match_parent">
             <ImageView
+                android:id="@+id/notification_button_main"
                 android:layout_width="40dp"
                 android:layout_marginStart="10dp"
                 android:layout_height="match_parent"

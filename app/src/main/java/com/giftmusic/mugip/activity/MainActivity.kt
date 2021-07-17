@@ -143,6 +143,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
             startActivity(intent)
 
         }
+
+        // 알람 메뉴 버튼
+        val openNotificationActivityButton = findViewById<ImageView>(R.id.notification_button_main)
+        openNotificationActivityButton.setOnClickListener {
+            val intent = Intent(this, AlarmActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {

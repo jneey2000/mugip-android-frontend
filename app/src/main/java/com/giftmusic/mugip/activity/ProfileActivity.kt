@@ -1,5 +1,6 @@
 package com.giftmusic.mugip.activity
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
@@ -17,6 +18,13 @@ class ProfileActivity : AppCompatActivity() {
         val backButton = findViewById<ImageView>(R.id.back_to_map_from_profile)
         backButton.setOnClickListener {
             finish()
+        }
+
+        // 알람 메뉴 버튼
+        val openNotificationActivityButton = findViewById<ImageView>(R.id.notification_button_profile)
+        openNotificationActivityButton.setOnClickListener {
+            val intent = Intent(this, AlarmActivity::class.java)
+            startActivity(intent)
         }
 
         val showHistoryButton = findViewById<Button>(R.id.show_history_button)
