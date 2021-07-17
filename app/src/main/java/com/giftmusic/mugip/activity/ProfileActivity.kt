@@ -27,13 +27,16 @@ class ProfileActivity : AppCompatActivity() {
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
 
+        val historyFragment = HistoryFragment()
+        val playlistFragment = PlaylistFragment()
+
         when(intent.getIntExtra("initialFragment", 0)){
 
             0 -> {
                 showHistoryButton.isSelected = true
                 showHistoryButton.setTextColor(primaryColor)
                 showPlaylistButton.setTextColor(whiteColor)
-                fragmentTransaction.add(R.id.profile_fragment, HistoryFragment())
+                fragmentTransaction.add(R.id.profile_fragment, historyFragment)
 
             }
 
@@ -41,7 +44,7 @@ class ProfileActivity : AppCompatActivity() {
                 showPlaylistButton.isSelected = true
                 showHistoryButton.setTextColor(whiteColor)
                 showPlaylistButton.setTextColor(primaryColor)
-                fragmentTransaction.add(R.id.profile_fragment, PlaylistFragment())
+                fragmentTransaction.add(R.id.profile_fragment, playlistFragment)
             }
         }
         fragmentTransaction.commit()
@@ -52,8 +55,7 @@ class ProfileActivity : AppCompatActivity() {
             showPlaylistButton.setTextColor(whiteColor)
             showHistoryButton.isSelected = true
             showPlaylistButton.isSelected = false
-            fragmentTransaction.add(R.id.profile_fragment, HistoryFragment())
-            fragmentTransaction.commit()
+            fragmentManager.beginTransaction().replace(R.id.profile_fragment, historyFragment).commit()
         }
 
         showPlaylistButton.setOnClickListener {
@@ -61,8 +63,7 @@ class ProfileActivity : AppCompatActivity() {
             showPlaylistButton.setTextColor(primaryColor)
             showHistoryButton.isSelected = false
             showPlaylistButton.isSelected = true
-            fragmentTransaction.add(R.id.profile_fragment, PlaylistFragment())
-            fragmentTransaction.commit()
+            fragmentManager.beginTransaction().replace(R.id.profile_fragment, playlistFragment).commit()
         }
 
         val followingButton = findViewById<Button>(R.id.following_button)

@@ -21,6 +21,7 @@ class HistoryFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        musicList.clear()
         musicList.add(HistoryListItem("https://github.com", "멸공의 횃불", "육군", "\uD83D\uDCBB 업무"))
         musicList.add(HistoryListItem("https://github.com", "아미타이거", "육군", "\uD83D\uDCBB 업무"))
         musicList.add(HistoryListItem("https://github.com", "전우", "육군", "\uD83D\uDCBB 업무"))
