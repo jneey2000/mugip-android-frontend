@@ -10,11 +10,11 @@ import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.giftmusic.mugip.R
-import com.giftmusic.mugip.models.HistoryListItem
+import com.giftmusic.mugip.models.MusicItem
 
-class HistoryListAdapter(list: List<HistoryListItem>) :
+class HistoryListAdapter(list: List<MusicItem>) :
     RecyclerView.Adapter<HistoryListAdapter.ItemViewHolder>() {
-    private val mList : List<HistoryListItem> = list
+    private val mList : List<MusicItem> = list
 
     inner class ItemViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!){
         private val musicThumbnailView : ImageView = itemView!!.findViewById(R.id.music_thumbnail) as ImageView
@@ -23,7 +23,7 @@ class HistoryListAdapter(list: List<HistoryListItem>) :
         private val musicCategoryView : TextView = itemView!!.findViewById(R.id.music_category) as TextView
 
 
-        fun bind(item: HistoryListItem){
+        fun bind(item: MusicItem){
             val defaultImage = ResourcesCompat.getDrawable(itemView.resources, R.drawable.albumart_1, null) as BitmapDrawable
             val bitmap = Bitmap.createScaledBitmap(defaultImage.bitmap, 50, 50, false)
 

@@ -82,13 +82,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // 화면 계속 켜져 있게
-        window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
         setContentView(R.layout.activity_main)
         mLayout = findViewById(R.id.layout_main)
 
         // 위치 권한 요청
-        locationRequest = LocationRequest.create().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .setInterval(locationUpdateInterval).setFastestInterval(locationUpdateIntervalFastest)
+        locationRequest =
+            LocationRequest.create().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(locationUpdateInterval)
+                .setFastestInterval(locationUpdateIntervalFastest)
         val builder = LocationSettingsRequest.Builder()
         builder.addLocationRequest(locationRequest)
 
@@ -99,8 +104,13 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        otherUsers.add(OtherUser("https://raw.githubusercontent.com/Gift-Music/mugip-android-frontend/MVP/Jeongin/test_assets/user_1.png?token=ACQXZAY2XLEHCBD5Z7CXWDDA6DPJ2", LatLng(37.299914556000154, 126.8410831016941)))
-        
+        otherUsers.add(
+            OtherUser(
+                "https://raw.githubusercontent.com/Gift-Music/mugip-android-frontend/MVP/Jeongin/test_assets/user_1.png?token=ACQXZAY2XLEHCBD5Z7CXWDDA6DPJ2",
+                LatLng(37.299914556000154, 126.8410831016941)
+            )
+        )
+
         // 상단 카테고리 버튼 동작
         val selectedCategoryButton = findViewById<Button>(R.id.selected_category)
         val selectCategoryAllButton = findViewById<Button>(R.id.select_category_all)
@@ -120,12 +130,18 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnR
         selectCategoryTripButton.setOnClickListener(CategoryButtonListener())
         selectCategoryProgrammingButton.setOnClickListener(CategoryButtonListener())
         selectCategoryShowerButton.setOnClickListener(CategoryButtonListener())
-        
+
         // 하단 메뉴 버튼
         val openProfileActivityButton = findViewById<ImageView>(R.id.ic_profile)
+        val openPlayListActivityButton = findViewById<ImageView>(R.id.ic_playlist)
         openProfileActivityButton.setOnClickListener {
             val intent = Intent(this, ProfileActivity::class.java).putExtra("initialFragment", 0)
             startActivity(intent)
+        }
+        openPlayListActivityButton.setOnClickListener {
+            val intent = Intent(this, ProfileActivity::class.java).putExtra("initialFragment", 1)
+            startActivity(intent)
+
         }
     }
 
