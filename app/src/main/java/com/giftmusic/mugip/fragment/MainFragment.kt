@@ -3,7 +3,6 @@ package com.giftmusic.mugip.fragment
 import android.Manifest
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -22,7 +21,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.giftmusic.mugip.R
-import com.giftmusic.mugip.activity.ProfileActivity
 import com.giftmusic.mugip.models.OtherUser
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -96,9 +94,9 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
         selectCategoryShowerButton.setOnClickListener(CategoryButtonListener())
 
         // 하단 메뉴 버튼
-        val openProfileActivityButton = layout.findViewById<ImageView>(R.id.ic_profile)
-        val openPlayListActivityButton = layout.findViewById<ImageView>(R.id.ic_playlist)
-        val openMapActivityButton = layout.findViewById<ImageView>(R.id.center_button)
+        val openProfileActivityButton = requireActivity().findViewById<ImageView>(R.id.ic_profile)
+        val openPlayListActivityButton = requireActivity().findViewById<ImageView>(R.id.ic_playlist)
+        val openMapActivityButton = requireActivity().findViewById<ImageView>(R.id.center_button)
         openProfileActivityButton.setOnClickListener {
 
         }
