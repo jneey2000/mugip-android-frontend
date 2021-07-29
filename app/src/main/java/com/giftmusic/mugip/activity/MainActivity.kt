@@ -3,6 +3,7 @@ package com.giftmusic.mugip.activity
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -10,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.fragment.MainFragment
+import com.giftmusic.mugip.fragment.ProfileFragment
 import com.google.android.material.navigation.NavigationView
 
 
@@ -24,6 +26,24 @@ class MainActivity : FragmentActivity(), NavigationView.OnNavigationItemSelected
 
         currentFragment = MainFragment()
         supportFragmentManager.beginTransaction().replace(R.id.content_main, currentFragment).commit()
+
+        // 하단 메뉴 버튼
+        val openProfileActivityButton = findViewById<ImageView>(R.id.ic_profile)
+        val openPlayListActivityButton = findViewById<ImageView>(R.id.ic_playlist)
+        val openMapActivityButton = findViewById<ImageView>(R.id.center_button)
+        openProfileActivityButton.setOnClickListener {
+            if (currentFragment !is ProfileFragment){
+                supportFragmentManager.beginTransaction().replace(R.id.content_main, ProfileFragment()).addToBackStack(null).commit()
+            }
+        }
+        openPlayListActivityButton.setOnClickListener {
+
+        }
+        openMapActivityButton.setOnClickListener {
+            if(currentFragment is MainFragment){
+                (currentFragment as MainFragment).fetchLocation()
+            }
+        }
     }
 
     override fun onBackPressed() {

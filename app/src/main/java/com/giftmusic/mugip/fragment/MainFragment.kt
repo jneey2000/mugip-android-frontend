@@ -3,6 +3,7 @@ package com.giftmusic.mugip.fragment
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -21,6 +22,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.giftmusic.mugip.R
+import com.giftmusic.mugip.activity.AlarmActivity
 import com.giftmusic.mugip.models.OtherUser
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -92,24 +94,12 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
         selectCategoryProgrammingButton.setOnClickListener(CategoryButtonListener())
         selectCategoryShowerButton.setOnClickListener(CategoryButtonListener())
 
-        // 하단 메뉴 버튼
-        val openProfileActivityButton = requireActivity().findViewById<ImageView>(R.id.ic_profile)
-        val openPlayListActivityButton = requireActivity().findViewById<ImageView>(R.id.ic_playlist)
-        val openMapActivityButton = requireActivity().findViewById<ImageView>(R.id.center_button)
-        openProfileActivityButton.setOnClickListener {
-
-        }
-        openPlayListActivityButton.setOnClickListener {
-
-        }
-        openMapActivityButton.setOnClickListener {
-            fetchLocation()
-        }
 
         // 알람 메뉴 버튼
         val openNotificationActivityButton = layout.findViewById<ImageView>(R.id.notification_button_main)
         openNotificationActivityButton.setOnClickListener {
-
+            val intent = Intent(activity, AlarmActivity::class.java)
+            startActivity(intent)
         }
 
         return layout
@@ -134,7 +124,7 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
     }
 
     // 현재 위치 fetch
-    private fun fetchLocation(){
+    fun fetchLocation(){
         if(ActivityCompat.checkSelfPermission(activity as Context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(activity as Context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(activity as Activity, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE)
         } else {
