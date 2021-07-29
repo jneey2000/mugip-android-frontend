@@ -38,7 +38,7 @@ import java.net.URL
 import kotlinx.coroutines.runBlocking as runBlocking1
 
 
-class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
+class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleMap.OnMarkerClickListener {
     private val otherUsers = ArrayList<OtherUser>() // 다른 사용자를 담기 위한 배열
     private val otherUserMarkers = ArrayList<MarkerOptions>() // 다른 사용자의 마커를 담기 위한 배열
     private lateinit var map : GoogleMap // 구글 지도 객체
@@ -128,6 +128,12 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
         currentCircle = map.addCircle(circleOption)
         addMarker()
+        map.setOnMarkerClickListener(this)
+    }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+        requireActivity().supportFragmentManager.beginTransaction().replace(R.id.content_main, OtherUserFragment()).addToBackStack(null).commit()
+        return true
     }
 
     // 현재 위치 fetch
