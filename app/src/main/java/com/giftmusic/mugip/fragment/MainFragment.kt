@@ -47,7 +47,6 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
     private val REQUEST_CODE = 1001
     private lateinit var mContext: Context
     private lateinit var mapView : MapView
-    private var currentCircle : Circle? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -123,10 +122,8 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
         map.uiSettings.isMyLocationButtonEnabled = false
 
         val latLng = LatLng(37.29685208641291, 126.83724122364636)
-        val circleOption = CircleOptions().center(latLng).fillColor(Color.parseColor("#556B63FF")).radius(2000.0).strokeWidth(0f)
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng))
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
-        currentCircle = map.addCircle(circleOption)
         addMarker()
         map.setOnMarkerClickListener(this)
     }
@@ -145,13 +142,8 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
             task.addOnSuccessListener {
                 currentLocation = it
                 val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
-                val circleOption = CircleOptions().center(latLng).fillColor(Color.parseColor("#556B63FF")).radius(2000.0).strokeWidth(0f)
                 map.moveCamera(CameraUpdateFactory.newLatLng(latLng))
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
-                if(currentCircle != null){
-                    currentCircle!!.remove()
-                    currentCircle = map.addCircle(circleOption)
-                }
             }
         }
     }
@@ -164,11 +156,11 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
                 var bitmap : Bitmap
                 try{
                     val url = URL(it.imageUrl)
-                    val conn = url.openConnection() as HttpURLConnection;
-                    conn.doInput = true; // 서버로 부터 응답 수신
-                    conn.connect();
+                    val conn = url.openConnection() as HttpURLConnection
+                    conn.doInput = true // 서버로 부터 응답 수신
+                    conn.connect()
 
-                    val inputStream: InputStream = conn.inputStream; // InputStream 값 가져오기
+                    val inputStream: InputStream = conn.inputStream // InputStream 값 가져오기
                     bitmap = BitmapFactory.decodeStream(inputStream)
                 } catch (e: FileNotFoundException){
                     val markerImage = ResourcesCompat.getDrawable(resources,
