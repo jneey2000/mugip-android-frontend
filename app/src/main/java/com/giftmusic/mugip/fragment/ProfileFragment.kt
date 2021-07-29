@@ -19,7 +19,7 @@ class ProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
-        val layout = inflater.inflate(R.layout.fragment_profile, container, false)
+        val layout = inflater.inflate(R.layout.fragment_profile_list, container, false)
 
         val backButton = layout.findViewById<ImageView>(R.id.back_to_map_from_profile)
         backButton.setOnClickListener {
