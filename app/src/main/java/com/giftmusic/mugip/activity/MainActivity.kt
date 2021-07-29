@@ -42,6 +42,8 @@ class MainActivity : FragmentActivity(), NavigationView.OnNavigationItemSelected
         openMapActivityButton.setOnClickListener {
             if(currentFragment is MainFragment){
                 (currentFragment as MainFragment).fetchLocation()
+            } else {
+                supportFragmentManager.popBackStack()
             }
         }
     }
@@ -51,7 +53,11 @@ class MainActivity : FragmentActivity(), NavigationView.OnNavigationItemSelected
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)
         } else {
-            super.onBackPressed()
+            if(currentFragment is MainFragment){
+                super.onBackPressed()
+            } else {
+                supportFragmentManager.beginTransaction().replace(R.id.content_main, ProfileFragment()).commit()
+            }
         }
     }
 
