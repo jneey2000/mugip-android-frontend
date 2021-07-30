@@ -35,14 +35,17 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        val keyHash: String = getKeyHash(this /* context */)
-        Log.d("KeyHash", keyHash)
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
-
         // 구글 로그인
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestId().requestEmail().requestProfile().build()
+
+        // 구글 자동 로그인
+        val gsa = GoogleSignIn.getLastSignedInAccount(this)
+        if(gsa != null){
+            moveToMainActivity()
+        }
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_login)
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
         auth = FirebaseAuth.getInstance()
