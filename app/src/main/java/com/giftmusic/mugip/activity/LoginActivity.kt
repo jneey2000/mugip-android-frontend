@@ -16,6 +16,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.kakao.sdk.auth.AuthApiClient
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.util.Utility.getKeyHash
 import com.kakao.sdk.user.UserApiClient
@@ -25,6 +26,15 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 자동 앱 로그인(카카오)
+        if(AuthApiClient.instance.hasToken()){
+            UserApiClient.instance.accessTokenInfo{_, error ->
+                if(error == null){
+                    moveToMainActivity()
+                }
+            }
+        }
+
         val keyHash: String = getKeyHash(this /* context */)
         Log.d("KeyHash", keyHash)
         super.onCreate(savedInstanceState)
