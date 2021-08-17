@@ -41,12 +41,14 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "server_url", properties["RELEASE_URL"]
             manifestPlaceholders = [
                     mapKey: properties["MAPS_API_KEY"].toString()
             ]
         }
         debug {
             signingConfig signingConfigs.debugWithSignedKey
+            buildConfigField "String", "server_url", properties["DEBUG_URL"]
             manifestPlaceholders = [
                     mapKey: properties["MAPS_API_KEY"].toString()
             ]
