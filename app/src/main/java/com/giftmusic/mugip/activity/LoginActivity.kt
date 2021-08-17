@@ -82,7 +82,6 @@ class LoginActivity : AppCompatActivity() {
                     val intent = Intent(this@LoginActivity, LoginActivityEmail::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_TASK_ON_HOME
                     startActivity(intent)
-                    finish()
                 }
                 R.id.btn_signup -> {}
             }
