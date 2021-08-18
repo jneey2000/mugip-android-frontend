@@ -34,16 +34,19 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="65dp"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginRight="20dp"
+        android:gravity="bottom"
+        android:paddingTop="4dp"
+        android:clipToPadding="false"
         android:hint="@string/id">
 
       <com.google.android.material.textfield.TextInputEditText
           android:id="@+id/id_signup"
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
+          android:layout_height="40dp"
           android:background="@drawable/edit_text_border"
           android:padding="10dp"
           />
@@ -51,17 +54,20 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="65dp"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginRight="20dp"
+        android:gravity="bottom"
+        android:paddingTop="4dp"
+        android:clipToPadding="false"
         android:hint="@string/password"
         >
 
       <com.google.android.material.textfield.TextInputEditText
           android:id="@+id/password_signup"
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
+          android:layout_height="40dp"
           android:background="@drawable/edit_text_border"
           android:inputType="textPassword"
           android:padding="10dp"
@@ -70,16 +76,19 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="65dp"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginRight="20dp"
+        android:gravity="bottom"
+        android:paddingTop="4dp"
+        android:clipToPadding="false"
         android:hint="이메일">
 
       <com.google.android.material.textfield.TextInputEditText
           android:id="@+id/email_signup"
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
+          android:layout_height="40dp"
           android:background="@drawable/edit_text_border"
           android:padding="10dp"
           />
@@ -87,16 +96,19 @@
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="65dp"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="20dp"
         android:layout_marginRight="20dp"
+        android:gravity="bottom"
+        android:paddingTop="4dp"
+        android:clipToPadding="false"
         android:hint="닉네임">
 
       <com.google.android.material.textfield.TextInputEditText
           android:id="@+id/nickname_signup"
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
+          android:layout_height="40dp"
           android:background="@drawable/edit_text_border"
           android:padding="10dp"
           />
