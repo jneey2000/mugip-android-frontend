@@ -16,6 +16,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.kakao.sdk.auth.AuthApiClient
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.util.Utility.getKeyHash
 import com.kakao.sdk.user.UserApiClient
@@ -25,14 +26,26 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val keyHash: String = getKeyHash(this /* context */)
-        Log.d("KeyHash", keyHash)
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        // 자동 앱 로그인(카카오)
+        if(AuthApiClient.instance.hasToken()){
+            UserApiClient.instance.accessTokenInfo{_, error ->
+                if(error == null){
+                    moveToMainActivity()
+                }
+            }
+        }
 
         // 구글 로그인
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestId().requestEmail().requestProfile().build()
+
+        // 구글 자동 로그인
+        val gsa = GoogleSignIn.getLastSignedInAccount(this)
+        if(gsa != null){
+            moveToMainActivity()
+        }
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_login)
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)
         auth = FirebaseAuth.getInstance()
@@ -69,9 +82,12 @@ class LoginActivity : AppCompatActivity() {
                     val intent = Intent(this@LoginActivity, LoginActivityEmail::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_TASK_ON_HOME
                     startActivity(intent)
-                    finish()
                 }
-                R.id.btn_signup -> {}
+                R.id.btn_signup -> {
+                    val intent = Intent(this@LoginActivity, SignupActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_TASK_ON_HOME
+                    startActivity(intent)
+                }
             }
         }
     }
