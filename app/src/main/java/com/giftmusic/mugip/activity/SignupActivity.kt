@@ -19,9 +19,8 @@ import com.google.gson.Gson
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.io.DataOutputStream
-import java.io.FileNotFoundException
-import java.io.InputStream
+import java.io.*
+import java.lang.StringBuilder
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -40,27 +39,38 @@ class SignupActivity : AppCompatActivity() {
             val signupRequest = GlobalScope.launch {
                 val url = URL(BuildConfig.server_url + "/user/signup")
                 val conn = url.openConnection() as HttpURLConnection
-//                try{
-                conn.requestMethod = "POST"
-                conn.setRequestProperty("Content-Type", "application/json; utf-8")
-                conn.setRequestProperty("Accept", "application/json")
-                conn.doOutput = true
+                try {
+                    conn.requestMethod = "POST"
+                    conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                    conn.setRequestProperty("Accept", "application/json")
+                    conn.doOutput = true
 
-                val requestJson = HashMap<String, String>()
-                requestJson["username"] = idInput.text.toString()
-                requestJson["password"] = passwordInput.text.toString()
-                requestJson["email"] = emailInput.text.toString()
-                requestJson["usernickname"] = nicknameInput.text.toString()
+                    val requestJson = HashMap<String, String>()
+                    requestJson["username"] = idInput.text.toString()
+                    requestJson["password"] = passwordInput.text.toString()
+                    requestJson["email"] = emailInput.text.toString()
+                    requestJson["usernickname"] = nicknameInput.text.toString()
 
-                val writeStream = DataOutputStream(conn.outputStream)
-                writeStream.writeBytes(Gson().toJson(requestJson))
-                writeStream.flush()
-                writeStream.close()
-                Log.d("URL", url.toString())
+                    conn.outputStream.use { os ->
+                        val input: ByteArray =
+                            Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                        os.write(input, 0, input.size)
+                    }
 
-//                } finally {
-                conn.disconnect()
-//                }
+                    BufferedReader(
+                        InputStreamReader(conn.inputStream, "utf-8")
+                    ).use { br ->
+                        val response = StringBuilder()
+                        var responseLine: String? = null
+                        while (br.readLine().also { responseLine = it } != null) {
+                            response.append(responseLine!!.trim { it <= ' ' })
+                        }
+                        println(response.toString())
+                    }
+                }
+                finally {
+                    conn.disconnect()
+                }
             }
             runBlocking {
                 signupRequest.join()
