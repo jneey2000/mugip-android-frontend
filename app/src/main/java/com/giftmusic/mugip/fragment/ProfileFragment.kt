@@ -41,6 +41,11 @@ class ProfileFragment : Fragment() {
             startActivity(intent)
         }
 
+        val uploadButton = layout.findViewById<Button>(R.id.upload_button)
+        uploadButton.setOnClickListener {
+            requireActivity().supportFragmentManager.beginTransaction().replace(R.id.content_main, UploadFragment()).addToBackStack(null).commit()
+        }
+
         viewPager2 = layout.findViewById(R.id.my_profile_tab_pager)
         tabLayout = layout.findViewById(R.id.my_profile_tab_layout)
         viewPager2.adapter = OtherUserFragmentStateAdapter(this.requireActivity())
