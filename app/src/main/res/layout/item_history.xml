@@ -50,15 +50,15 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toRightOf="@id/music_thumbnail"
+                android:layout_marginStart="90dp"
+                app:layout_constraintStart_toEndOf="@id/music_thumbnail"
                 app:layout_constraintTop_toTopOf="parent">
                 <LinearLayout
                     android:id="@+id/music_info"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginStart="10dp"
-                    android:layout_weight="1"
+                    android:layout_weight="3"
                     android:gravity="center_vertical"
                     android:orientation="vertical">
                     <TextView
@@ -81,6 +81,7 @@
                     android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
+                    android:layout_marginEnd="16dp"
                 >
 
                     <TextView
