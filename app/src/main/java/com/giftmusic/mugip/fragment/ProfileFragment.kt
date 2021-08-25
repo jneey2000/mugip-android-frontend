@@ -9,10 +9,18 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
+import androidx.viewpager2.widget.ViewPager2
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.activity.AlarmActivity
+import com.giftmusic.mugip.adapter.OtherUserFragmentStateAdapter
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 
 class ProfileFragment : Fragment() {
+    lateinit var viewPager2 : ViewPager2
+    lateinit var tabLayout: TabLayout
+    private val tabTextList = arrayListOf("History", "Others")
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -33,42 +41,17 @@ class ProfileFragment : Fragment() {
             startActivity(intent)
         }
 
-        val showHistoryButton = layout.findViewById<Button>(R.id.show_history_button)
-        val showPlaylistButton = layout.findViewById<Button>(R.id.show_playlist_button)
-        val showBookmarkButton = layout.findViewById<Button>(R.id.show_bookmark_button)
-
-        val primaryColor = resources.getColor(R.color.primary)
-        val whiteColor = Color.parseColor("#FFFFFF")
-
-        val fragmentManager = childFragmentManager
-        val fragmentTransaction = fragmentManager.beginTransaction()
-
-        val historyFragment = HistoryFragment()
-        val playlistFragment = PlaylistFragment()
-
-        showHistoryButton.isSelected = true
-        showHistoryButton.setTextColor(primaryColor)
-        showPlaylistButton.setTextColor(whiteColor)
-        fragmentTransaction.add(R.id.profile_fragment, historyFragment).commit()
-
-        // 버튼 클릭시
-        showHistoryButton.setOnClickListener {
-            showHistoryButton.setTextColor(primaryColor)
-            showPlaylistButton.setTextColor(whiteColor)
-            showHistoryButton.isSelected = true
-            showPlaylistButton.isSelected = false
-            fragmentManager.beginTransaction().replace(R.id.profile_fragment, historyFragment).commit()
+        val uploadButton = layout.findViewById<Button>(R.id.upload_button)
+        uploadButton.setOnClickListener {
+            requireActivity().supportFragmentManager.beginTransaction().replace(R.id.content_main, UploadFragment()).addToBackStack(null).commit()
         }
 
-        showPlaylistButton.setOnClickListener {
-            showHistoryButton.setTextColor(whiteColor)
-            showPlaylistButton.setTextColor(primaryColor)
-            showHistoryButton.isSelected = false
-            showPlaylistButton.isSelected = true
-            fragmentManager.beginTransaction().replace(R.id.profile_fragment, playlistFragment).commit()
-        }
-
-
+        viewPager2 = layout.findViewById(R.id.my_profile_tab_pager)
+        tabLayout = layout.findViewById(R.id.my_profile_tab_layout)
+        viewPager2.adapter = OtherUserFragmentStateAdapter(this.requireActivity())
+        TabLayoutMediator(tabLayout, viewPager2){
+                tab, position -> tab.text = tabTextList[position]
+        }.attach()
         return layout
     }
 }

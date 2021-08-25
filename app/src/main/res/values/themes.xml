@@ -1,5 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
+    <style name="Theme.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher</item>
+        <item name="windowSplashScreenAnimationDuration">2000</item>
+        <item name="postSplashScreenTheme">@style/Theme.MugipApp</item>
+    </style>
     <style name="Theme.MugipApp" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- 앱 타이틀 바 삭제 -->
         <item name="windowActionBar">false</item>

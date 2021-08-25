@@ -21,16 +21,18 @@ class HistoryListAdapter(list: List<MusicItem>) :
         private val musicTitleView : TextView = itemView!!.findViewById(R.id.music_name) as TextView
         private val musicArtistView : TextView = itemView!!.findViewById(R.id.music_artist) as TextView
         private val musicCategoryView : TextView = itemView!!.findViewById(R.id.music_category) as TextView
+        private val verticalBar : View = itemView!!.findViewById(R.id.other_user_history_connect_bar) as View
 
 
-        fun bind(item: MusicItem){
-            val defaultImage = ResourcesCompat.getDrawable(itemView.resources, R.drawable.albumart_1, null) as BitmapDrawable
-            val bitmap = Bitmap.createScaledBitmap(defaultImage.bitmap, 50, 50, false)
-
-            musicThumbnailView.setImageBitmap(bitmap)
+        fun bind(item: MusicItem, index: Int){
+//            musicThumbnailView.setBackgroundResource(R.drawable.albumart_1)
             musicTitleView.text = item.musicTitle
             musicArtistView.text = item.artist
             musicCategoryView.text = item.category
+
+            if(index == 0){
+                verticalBar.visibility = View.INVISIBLE
+            }
         }
     }
 
@@ -40,7 +42,7 @@ class HistoryListAdapter(list: List<MusicItem>) :
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
-        holder.bind(mList[position])
+        holder.bind(mList[position], position)
     }
 
     override fun getItemCount(): Int {

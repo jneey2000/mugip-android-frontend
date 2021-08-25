@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.location.Location
 import android.os.Bundle
@@ -23,7 +22,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.activity.AlarmActivity
-import com.giftmusic.mugip.models.OtherUser
+import com.giftmusic.mugip.models.OtherUserOnMap
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -41,7 +40,7 @@ import kotlinx.coroutines.runBlocking as runBlocking1
 
 
 class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleMap.OnMarkerClickListener {
-    private val otherUsers = ArrayList<OtherUser>() // 다른 사용자를 담기 위한 배열
+    private val otherUsers = ArrayList<OtherUserOnMap>() // 다른 사용자를 담기 위한 배열
     private val otherUserMarkers = ArrayList<MarkerOptions>() // 다른 사용자의 마커를 담기 위한 배열
     private lateinit var map : GoogleMap // 구글 지도 객체
     private lateinit var currentLocation : Location // 현재 위치 객체
@@ -61,7 +60,7 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
         otherUsers.add(
-            OtherUser(
+            OtherUserOnMap(
                 "https://raw.githubusercontent.com/Gift-Music/mugip-android-frontend/MVP/Jeongin/test_assets/user_1.png?token=ACQXZAY2XLEHCBD5Z7CXWDDA6DPJ2",
                 LatLng(37.299914556000154, 126.8410831016941)
             )
