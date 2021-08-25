@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Mugip App</string>
     <string name="forgot_password">비밀번호 찾기</string>
-    <string name="sign_in">가입하기</string>
+    <string name="sign_in">Mugip과 함께하기</string>
     <string name="auto_login">자동 로그인</string>
     <string name="login_title">Mugip 로그인</string>
     <string name="login">로그인</string>

@@ -5,10 +5,15 @@ import android.content.ContentValues.TAG
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -16,10 +21,18 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.gson.Gson
 import com.kakao.sdk.auth.AuthApiClient
 import com.kakao.sdk.auth.model.OAuthToken
-import com.kakao.sdk.common.util.Utility.getKeyHash
 import com.kakao.sdk.user.UserApiClient
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.lang.StringBuilder
+import java.net.HttpURLConnection
+import java.net.URL
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var auth : FirebaseAuth
@@ -51,15 +64,63 @@ class LoginActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
 
         // 버튼 연결
-        val kakaoLoginButton : Button = findViewById(R.id.btn_login_kakao)
-        val googleLoginButton : Button = findViewById(R.id.btn_login_google)
-        val emailLoginButton : Button = findViewById(R.id.btn_login_email)
-        val signUpButton : Button = findViewById(R.id.btn_signup)
+        val kakaoLoginButton : ImageButton = findViewById(R.id.btn_login_kakao)
+        val googleLoginButton : LinearLayout = findViewById(R.id.btn_login_google)
 
         kakaoLoginButton.setOnClickListener(LoginButtonListener())
         googleLoginButton.setOnClickListener(LoginButtonListener())
-        emailLoginButton.setOnClickListener(LoginButtonListener())
-        signUpButton.setOnClickListener(LoginButtonListener())
+
+        val loginButton = findViewById<Button>(R.id.btn_login_email)
+        val loginID = findViewById<EditText>(R.id.email_login_id)
+        val loginPW = findViewById<EditText>(R.id.email_login_password)
+        loginButton.setOnClickListener{
+            if(TextUtils.isEmpty(loginID.text) || !android.util.Patterns.EMAIL_ADDRESS.matcher(loginID.text as CharSequence).matches() || TextUtils.isEmpty(loginPW.text)) {
+                showFailToLoginDialog()
+            } else {
+                val signupRequest = GlobalScope.launch {
+                    val url = URL(BuildConfig.server_url + "/user/signin")
+                    val conn = url.openConnection() as HttpURLConnection
+                    try {
+                        conn.requestMethod = "POST"
+                        conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                        conn.setRequestProperty("Accept", "application/json")
+                        conn.doOutput = true
+
+                        val requestJson = HashMap<String, String>()
+                        requestJson["username"] = loginID.text.toString()
+                        requestJson["password"] = loginPW.text.toString()
+
+                        conn.outputStream.use { os ->
+                            val input: ByteArray =
+                                Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                            os.write(input, 0, input.size)
+                        }
+
+                        BufferedReader(
+                            InputStreamReader(conn.inputStream, "utf-8")
+                        ).use { br ->
+                            val response = StringBuilder()
+                            var responseLine: String? = null
+                            while (br.readLine().also { responseLine = it } != null) {
+                                response.append(responseLine!!.trim { it <= ' ' })
+                            }
+                            println(response.toString())
+                            moveToMainActivity()
+                        }
+                    }
+                    catch (e : Exception){
+                        Log.e("Sign in error", e.message!!)
+                        showFailToLoginDialog()
+                    }
+                    finally {
+                        conn.disconnect()
+                    }
+                }
+                runBlocking {
+                    signupRequest.join()
+                }
+            }
+        }
     }
 
     inner class LoginButtonListener : View.OnClickListener{
@@ -77,16 +138,6 @@ class LoginActivity : AppCompatActivity() {
                 R.id.btn_login_google -> {
                     val signInIntent = googleSignInClient.signInIntent
                     startActivityForResult(signInIntent, 9001)
-                }
-                R.id.btn_login_email -> {
-                    val intent = Intent(this@LoginActivity, LoginActivityEmail::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_TASK_ON_HOME
-                    startActivity(intent)
-                }
-                R.id.btn_signup -> {
-                    val intent = Intent(this@LoginActivity, SignupActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_TASK_ON_HOME
-                    startActivity(intent)
                 }
             }
         }
