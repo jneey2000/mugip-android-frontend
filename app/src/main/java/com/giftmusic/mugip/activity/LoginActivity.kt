@@ -13,6 +13,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -58,6 +59,7 @@ class LoginActivity : AppCompatActivity() {
             moveToMainActivity()
         }
         super.onCreate(savedInstanceState)
+        installSplashScreen()
         setContentView(R.layout.activity_login)
 
         googleSignInClient = GoogleSignIn.getClient(this, gso)

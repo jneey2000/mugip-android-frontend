@@ -16,19 +16,25 @@
         <activity
             android:name=".activity.SignupActivity"
             android:exported="true"
+            android:theme="@style/Theme.MugipApp"
             />
-        <activity android:name=".activity.AlarmActivity"
+        <activity
+            android:name=".activity.AlarmActivity"
             android:exported="true"
+            android:theme="@style/Theme.MugipApp"
             />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${mapKey}" />
+            android:value="${mapKey}"
+            />
 
-        <activity android:name=".activity.MainActivity" />
+        <activity
+            android:name=".activity.MainActivity"
+            android:theme="@style/Theme.MugipApp"
+            />
         <activity
             android:name=".activity.LoginActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.NoActionBar"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
