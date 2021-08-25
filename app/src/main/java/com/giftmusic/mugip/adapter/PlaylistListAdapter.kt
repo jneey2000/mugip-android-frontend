@@ -1,18 +1,17 @@
 package com.giftmusic.mugip.adapter
 
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.giftmusic.mugip.R
+import com.giftmusic.mugip.models.MusicItem
 import com.giftmusic.mugip.models.PlayListItem
 
-class PlaylistListAdapter(list: List<PlayListItem>) :
+class PlaylistListAdapter(item: List<MusicItem>) :
     RecyclerView.Adapter<PlaylistListAdapter.ItemViewHolder>() {
-    private val mList : List<PlayListItem> = list
+    private val mList : List<MusicItem> = item
 
     inner class ItemViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!){
         private val playListTitle : TextView = itemView!!.findViewById(R.id.play_list_name) as TextView
@@ -20,15 +19,15 @@ class PlaylistListAdapter(list: List<PlayListItem>) :
         private val playListCategoryView : TextView = itemView!!.findViewById(R.id.play_list_category) as TextView
 
 
-        fun bind(item: PlayListItem){
-            playListTitle.text = item.title
-            playListDescription.text = "${item.musicList[0].musicTitle} 외 ${item.musicList.count() - 1}곡"
+        fun bind(item: MusicItem){
+            playListTitle.text = item.musicTitle
+            playListDescription.text = item.artist
             playListCategoryView.text = item.category
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_playlist, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_other_follow_playlist, parent, false)
         return ItemViewHolder(view)
     }
 
