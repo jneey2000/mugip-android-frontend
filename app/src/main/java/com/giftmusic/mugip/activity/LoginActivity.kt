@@ -51,7 +51,7 @@ class LoginActivity : AppCompatActivity() {
 
         // 구글 로그인
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestId().requestEmail().requestProfile().build()
+            .requestIdToken(getString(R.string.default_web_client_id)).build()
 
         // 구글 자동 로그인
         val gsa = GoogleSignIn.getLastSignedInAccount(this)
@@ -151,7 +151,19 @@ class LoginActivity : AppCompatActivity() {
             showFailToLoginDialog()
         }
         else if (token != null) {
-            moveToMainActivity()
+            UserApiClient.instance.me { user, error ->
+                if (error != null) {
+                    Log.e(TAG, "사용자 정보 요청 실패", error)
+                }
+                else if (user != null) {
+                    Log.i(TAG, "사용자 정보 요청 성공" +
+                            "\n회원번호: ${user.id}" +
+                            "\n이메일: ${user.kakaoAccount?.email}" +
+                            "\n닉네임: ${user.kakaoAccount?.profile?.nickname}" +
+                            "\n프로필사진: ${user.kakaoAccount?.profile?.thumbnailImageUrl}")
+                    moveToMainActivity()
+                }
+            }
         }
     }
 
@@ -193,7 +205,7 @@ class LoginActivity : AppCompatActivity() {
             try {
                 // Google Sign In was successful, authenticate with Firebase
                 val account = task.getResult(ApiException::class.java)!!
-                Log.d(TAG, "firebaseAuthWithGoogle:" + account.id)
+                Log.d(TAG, "firebaseAuthWithGoogle:" + account.idToken)
                 signInWithGoogle()
             } catch (e: ApiException) {
                 // Google Sign In failed, update UI appropriately
