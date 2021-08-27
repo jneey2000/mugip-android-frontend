@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.ContentValues.TAG
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
@@ -41,6 +42,8 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var googleSignInClient: GoogleSignInClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val prefManager = this.getPreferences(0)
+
         // 자동 앱 로그인(카카오)
         if(AuthApiClient.instance.hasToken()){
             UserApiClient.instance.accessTokenInfo{_, error ->
@@ -110,8 +113,12 @@ class LoginActivity : AppCompatActivity() {
                                 if(inputStream != null){
                                     val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                                     val responseJson = JSONObject(returnBody.trim())
-                                    Log.d("received data", responseJson.toString())
-                                    loginFailed = false
+                                    Log.d("receive data", responseJson.toString())
+                                    if(responseJson.has("access_token")){
+                                        loginFailed = false
+                                        val editor = prefManager.edit()
+                                        editor.putString("access_token", responseJson["access_token"].toString()).apply()
+                                    }
                                 }
                             }
                         }
@@ -127,6 +134,8 @@ class LoginActivity : AppCompatActivity() {
                     signupRequest.join()
                     if(loginFailed){
                         showFailToLoginDialog(errorCode)
+                    } else{
+                        moveToMainActivity()
                     }
                 }
             }
