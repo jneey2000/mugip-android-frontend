@@ -107,12 +107,12 @@ class LoginActivity : AppCompatActivity() {
                                 response.append(responseLine!!.trim { it <= ' ' })
                             }
                             println(response.toString())
+                            loginFailed = false
                             moveToMainActivity()
                         }
                     }
                     catch (e : Exception){
                         Log.e("Sign in error", e.message!!)
-                        showFailToLoginDialog()
                     }
                     finally {
                         conn.disconnect()
@@ -120,6 +120,9 @@ class LoginActivity : AppCompatActivity() {
                 }
                 runBlocking {
                     signupRequest.join()
+                    if(loginFailed){
+                        showFailToLoginDialog()
+                    }
                 }
             }
         }
@@ -147,7 +150,7 @@ class LoginActivity : AppCompatActivity() {
 
     val kakaoCallback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
         if (error != null) {
-            Log.e(TAG, "로그인 실패", error)
+            Log.e("로그인 실패", error.toString())
             showFailToLoginDialog()
         }
         else if (token != null) {
