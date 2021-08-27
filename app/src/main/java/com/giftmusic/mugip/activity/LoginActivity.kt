@@ -29,6 +29,7 @@ import com.kakao.sdk.user.UserApiClient
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.lang.StringBuilder
@@ -77,51 +78,55 @@ class LoginActivity : AppCompatActivity() {
         val loginPW = findViewById<EditText>(R.id.email_login_password)
         loginButton.setOnClickListener{
             if(TextUtils.isEmpty(loginID.text) || !android.util.Patterns.EMAIL_ADDRESS.matcher(loginID.text as CharSequence).matches() || TextUtils.isEmpty(loginPW.text)) {
-                showFailToLoginDialog()
+                showFailToLoginDialog(-1)
             } else {
+                var loginFailed = true
+                var errorCode = -1
                 val signupRequest = GlobalScope.launch {
-                    val url = URL(BuildConfig.server_url + "/user/signin")
+                    val url = URL(BuildConfig.server_url + "/user/login")
                     val conn = url.openConnection() as HttpURLConnection
-                    try {
+//                    try {
                         conn.requestMethod = "POST"
                         conn.setRequestProperty("Content-Type", "application/json; utf-8")
                         conn.setRequestProperty("Accept", "application/json")
                         conn.doOutput = true
+                        conn.doInput = true
 
                         val requestJson = HashMap<String, String>()
-                        requestJson["username"] = loginID.text.toString()
-                        requestJson["password"] = loginPW.text.toString()
+                        requestJson["Email"] = loginID.text.toString()
+                        requestJson["Password"] = loginPW.text.toString()
 
                         conn.outputStream.use { os ->
                             val input: ByteArray =
                                 Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
                             os.write(input, 0, input.size)
+                            os.flush()
                         }
 
-                        BufferedReader(
-                            InputStreamReader(conn.inputStream, "utf-8")
-                        ).use { br ->
-                            val response = StringBuilder()
-                            var responseLine: String? = null
-                            while (br.readLine().also { responseLine = it } != null) {
-                                response.append(responseLine!!.trim { it <= ' ' })
+                        when(conn.responseCode){
+                            401 -> errorCode = 401
+                            200 -> {
+                                val inputStream = conn.inputStream
+                                if(inputStream != null){
+                                    val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                                    val responseJson = JSONObject(returnBody.trim())
+                                    Log.d("received data", responseJson.toString())
+                                    loginFailed = false
+                                }
                             }
-                            println(response.toString())
-                            loginFailed = false
-                            moveToMainActivity()
                         }
-                    }
-                    catch (e : Exception){
-                        Log.e("Sign in error", e.message!!)
-                    }
-                    finally {
+//                    }
+//                    catch (e : Exception){
+//                        Log.e("Sign in error", e.message!!)
+//                    }
+//                    finally {
                         conn.disconnect()
-                    }
+//                    }
                 }
                 runBlocking {
                     signupRequest.join()
                     if(loginFailed){
-                        showFailToLoginDialog()
+                        showFailToLoginDialog(errorCode)
                     }
                 }
             }
@@ -151,7 +156,7 @@ class LoginActivity : AppCompatActivity() {
     val kakaoCallback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
         if (error != null) {
             Log.e("로그인 실패", error.toString())
-            showFailToLoginDialog()
+            showFailToLoginDialog(-1)
         }
         else if (token != null) {
             UserApiClient.instance.me { user, error ->
@@ -171,10 +176,10 @@ class LoginActivity : AppCompatActivity() {
     }
 
     // 로그인 실패할 때
-    private fun showFailToLoginDialog(){
+    private fun showFailToLoginDialog(errorCode: Int){
         val dialogBuilder = AlertDialog.Builder(this)
             .setTitle("로그인 실패")
-            .setMessage("로그인에 실패했습니다.")
+            .setMessage("로그인에 실패했습니다.($errorCode)")
             .setPositiveButton("뒤로 가기", DialogInterface.OnClickListener(){
                     _: DialogInterface, _: Int ->
             })
