@@ -1,129 +1,174 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.SignupActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/splash"
+    tools:context=".activity.LoginActivity">
 
 
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:paddingTop="50dp"
+      android:paddingTop="30dp"
+      android:paddingHorizontal="5dp"
       android:orientation="vertical"
       >
-
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_launcher" />
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="50dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginRight="50dp"
+        android:layout_marginTop="20dp"
+        android:textColor="@color/primary"
         android:text="Mugip 회원가입"
         android:textAlignment="center"
+        android:layout_marginBottom="20dp"
         android:textSize="25sp" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="20dp"
-        android:background="#FF7F7F7F"/>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="65dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="20dp"
-        android:gravity="bottom"
-        android:paddingTop="4dp"
-        android:clipToPadding="false"
-        android:hint="@string/id">
-
-      <com.google.android.material.textfield.TextInputEditText
-          android:id="@+id/id_signup"
-          android:layout_width="match_parent"
-          android:layout_height="40dp"
-          android:background="@drawable/edit_text_border"
-          android:padding="10dp"
-          />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="65dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="20dp"
-        android:gravity="bottom"
-        android:paddingTop="4dp"
-        android:clipToPadding="false"
-        android:hint="@string/password"
-        >
-
-      <com.google.android.material.textfield.TextInputEditText
-          android:id="@+id/password_signup"
-          android:layout_width="match_parent"
-          android:layout_height="40dp"
-          android:background="@drawable/edit_text_border"
-          android:inputType="textPassword"
-          android:padding="10dp"
-          />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="65dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="20dp"
-        android:gravity="bottom"
-        android:paddingTop="4dp"
-        android:clipToPadding="false"
-        android:hint="이메일">
-
-      <com.google.android.material.textfield.TextInputEditText
-          android:id="@+id/email_signup"
-          android:layout_width="match_parent"
-          android:layout_height="40dp"
-          android:background="@drawable/edit_text_border"
-          android:padding="10dp"
-          />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="65dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="20dp"
-        android:gravity="bottom"
-        android:paddingTop="4dp"
-        android:clipToPadding="false"
-        android:hint="닉네임">
-
-      <com.google.android.material.textfield.TextInputEditText
-          android:id="@+id/nickname_signup"
-          android:layout_width="match_parent"
-          android:layout_height="40dp"
-          android:background="@drawable/edit_text_border"
-          android:padding="10dp"
-          />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <Button
-        android:id="@+id/signup_button"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginRight="20dp"
-        android:text="회원가입"
-        />
+        app:cardCornerRadius="16dp"
+        app:strokeColor="@color/primary"
+        app:strokeWidth="5dp"
+        android:layout_marginHorizontal="30dp"
+        android:theme="@style/Theme.MaterialComponents.Light"
+        >
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="vertical"
+          android:background="@color/splash"
+          android:paddingTop="25dp"
+          android:paddingBottom="15dp"
+          android:paddingHorizontal="15dp"
+          >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_marginBottom="15dp"
+            android:layout_height="40dp">
+          <TextView
+              android:layout_width="80dp"
+              android:layout_height="match_parent"
+              android:text="이메일"
+              android:textSize="18sp"
+              android:gravity="center"
+              android:layout_marginEnd="10dp" />
 
+          <EditText
+              android:id="@+id/sign_up_email"
+              android:layout_width="match_parent"
+              android:layout_height="40dp"
+              android:gravity="center"
+              app:boxStrokeWidth="0dp"
+              app:boxStrokeWidthFocused="0dp"
+              android:background="@drawable/edit_text_border"
+              android:layout_marginBottom="10dp"
+              android:maxLines="1"
+              android:inputType="textEmailAddress"
+              >
+          </EditText>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="15dp"
+            >
+          <TextView
+              android:layout_width="80dp"
+              android:layout_height="match_parent"
+              android:text="아이디"
+              android:textSize="18sp"
+              android:gravity="center"
+              android:layout_marginEnd="10dp" />
+
+          <EditText
+              android:id="@+id/sign_up_id"
+              android:layout_width="match_parent"
+              android:layout_height="40dp"
+              android:gravity="center"
+              app:boxStrokeWidth="0dp"
+              app:boxStrokeWidthFocused="0dp"
+              android:background="@drawable/edit_text_border"
+              android:layout_marginBottom="10dp"
+              android:maxLines="1"
+              >
+          </EditText>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="15dp"
+            >
+          <TextView
+              android:layout_width="80dp"
+              android:layout_height="match_parent"
+              android:text="닉네임"
+              android:textSize="18sp"
+              android:gravity="center"
+              android:layout_marginEnd="10dp" />
+
+          <EditText
+              android:id="@+id/sign_up_nickname"
+              android:layout_width="match_parent"
+              android:layout_height="40dp"
+              android:gravity="center"
+              app:boxStrokeWidth="0dp"
+              app:boxStrokeWidthFocused="0dp"
+              android:background="@drawable/edit_text_border"
+              android:layout_marginBottom="10dp"
+              android:maxLines="1"
+              >
+          </EditText>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="15dp"
+            >
+          <TextView
+              android:layout_width="80dp"
+              android:layout_height="match_parent"
+              android:text="비밀번호"
+              android:textSize="18sp"
+              android:gravity="center"
+              android:layout_marginEnd="10dp" />
+
+          <EditText
+              android:id="@+id/sign_up_password"
+              android:layout_width="match_parent"
+              android:layout_height="40dp"
+              android:gravity="center"
+              app:boxStrokeWidth="0dp"
+              app:boxStrokeWidthFocused="0dp"
+              android:background="@drawable/edit_text_border"
+              android:layout_marginBottom="10dp"
+              android:maxLines="1"
+              android:inputType="textPassword"
+              >
+          </EditText>
+        </LinearLayout>
+
+
+        <Button
+            android:id="@+id/btn_sign_up"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sign_in"
+            android:background="@drawable/round_corner_signup"
+            android:textColor="@color/primary"
+            android:layout_marginVertical="10dp"
+            />
+
+      </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
   </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -85,7 +85,7 @@ class LoginActivity : AppCompatActivity() {
                 val signupRequest = GlobalScope.launch {
                     val url = URL(BuildConfig.server_url + "/user/login")
                     val conn = url.openConnection() as HttpURLConnection
-//                    try {
+                    try {
                         conn.requestMethod = "POST"
                         conn.setRequestProperty("Content-Type", "application/json; utf-8")
                         conn.setRequestProperty("Accept", "application/json")
@@ -115,13 +115,13 @@ class LoginActivity : AppCompatActivity() {
                                 }
                             }
                         }
-//                    }
-//                    catch (e : Exception){
-//                        Log.e("Sign in error", e.message!!)
-//                    }
-//                    finally {
+                    }
+                    catch (e : Exception){
+                        Log.e("Sign in error", e.message!!)
+                    }
+                    finally {
                         conn.disconnect()
-//                    }
+                    }
                 }
                 runBlocking {
                     signupRequest.join()
@@ -130,6 +130,12 @@ class LoginActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
+
+        val signUPButton = findViewById<Button>(R.id.btn_sign_up)
+        signUPButton.setOnClickListener {
+            val signupActivity = Intent(this, SignupActivity::class.java)
+            startActivity(signupActivity)
         }
     }
 
