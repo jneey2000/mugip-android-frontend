@@ -5,14 +5,19 @@ import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.widget.addTextChangedListener
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -35,8 +40,30 @@ class SignupActivity : AppCompatActivity() {
 
         val idInput = findViewById<EditText>(R.id.sign_up_id)
         val passwordInput = findViewById<EditText>(R.id.sign_up_password)
+        val passwordConfirmInput = findViewById<EditText>(R.id.sign_up_password_confirm)
+        val passwordConfirmString = findViewById<TextView>(R.id.sign_up_password_confirm_string)
         val nicknameInput = findViewById<EditText>(R.id.sign_up_nickname)
         val emailInput = findViewById<EditText>(R.id.sign_up_email)
+
+        passwordConfirmString.visibility = View.INVISIBLE
+        passwordConfirmInput.addTextChangedListener {
+            confirmPassword -> when(confirmPassword!!.length){
+                0 -> {
+                    passwordConfirmString.visibility = View.INVISIBLE
+                }
+                else -> {
+                    passwordConfirmString.visibility = View.VISIBLE
+                    if(confirmPassword.toString() == passwordInput.text.toString()){
+                        passwordConfirmString.text = "비밀번호 확인이 완료되었습니다."
+                        passwordConfirmString.setTextColor(ContextCompat.getColor(this, R.color.primary))
+                    } else {
+                        passwordConfirmString.text = "비밀번호가 일치하지 않습니다."
+                        passwordConfirmString.setTextColor(Color.RED)
+                    }
+                }
+            }
+        }
+
 
         val signupButton = findViewById<Button>(R.id.btn_sign_up)
         signupButton.setOnClickListener {
