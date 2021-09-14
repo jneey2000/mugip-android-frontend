@@ -152,6 +152,9 @@ class LoginActivity : AppCompatActivity() {
             .setTitle("등록되지 않은 사용자")
             .setMessage("등록되어 있지 않는 계정입니다. 닉네임 생성 화면으로 이동합니다.")
             .setPositiveButton("닉네임 생성하기") { _: DialogInterface, _: Int ->
+                val intent = Intent(this, SignUpOauthActivity::class.java)
+                startActivity(intent)
+                finish()
             }
         val dialog = dialogBuilder.create()
         dialog.show()

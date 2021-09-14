@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E8E6FF"
+    android:orientation="vertical"
+    tools:context=".activity.SignUpOauthActivity"
+    android:paddingTop="50dp"
+    android:paddingHorizontal="20dp"
+    >
+
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_launcher" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:textColor="@color/primary"
+        android:text="Mugip에서 당신을 표현할 수 있는\n이름을 정해주세요!"
+        android:textAlignment="center"
+        android:layout_marginBottom="20dp"
+        android:textSize="20sp" />
+
+    <EditText
+        android:id="@+id/oauth_nickname"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center"
+        app:boxStrokeWidth="0dp"
+        app:boxStrokeWidthFocused="0dp"
+        android:hint="닉네임"
+        android:background="@drawable/edit_text_border"
+        android:layout_marginBottom="10dp"
+        android:inputType="text"
+        android:maxLines="1"
+        />
+    <TextView
+        android:id="@+id/duplicate_nickname_string"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:textColor="#ff0000"
+        android:text="다른 사람이 이미 사용 중인 닉네임입니다."
+        android:textAlignment="center"
+        android:layout_marginBottom="20dp"
+        android:textSize="16sp"
+        />
+    <Button
+        android:id="@+id/decide_nickname_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="100dp"
+        android:background="@drawable/top_button_round_background"
+        android:text="결정하기"
+        android:textColor="@color/white"
+        />
+</LinearLayout>

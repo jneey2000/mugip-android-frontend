@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.giftmusic.mugip" >
+    package="com.giftmusic.mugip">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -11,38 +11,39 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.Splash" >
+        android:theme="@style/Theme.Splash"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".activity.SignUpOauthActivity"
+            android:exported="true"
+            android:theme="@style/Theme.MugipApp"/>
         <activity
             android:name=".activity.SignupActivity"
             android:exported="true"
-            android:theme="@style/Theme.MugipApp"
-            />
+            android:theme="@style/Theme.MugipApp" />
         <activity
             android:name=".activity.AlarmActivity"
             android:exported="true"
-            android:theme="@style/Theme.MugipApp"
-            />
+            android:theme="@style/Theme.MugipApp" />
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="${mapKey}"
-            />
+            android:value="${mapKey}" />
 
         <activity
             android:name=".activity.MainActivity"
-            android:theme="@style/Theme.MugipApp"
-            />
+            android:theme="@style/Theme.MugipApp" />
         <activity
             android:name=".activity.LoginActivity"
-            android:exported="true"
-            >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+        <activity
+            android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
