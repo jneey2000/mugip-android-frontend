@@ -40,9 +40,7 @@ import java.net.URL
 class LoginActivity : AppCompatActivity() {
     private lateinit var auth : FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        val prefManager = this.getPreferences(0)
 
         // 자동 앱 로그인(카카오)
         if(AuthApiClient.instance.hasToken()){
@@ -55,12 +53,12 @@ class LoginActivity : AppCompatActivity() {
 
         // 구글 로그인
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id)).build()
+            .requestIdToken(getString(R.string.default_web_client_id)).requestEmail().build()
 
         // 구글 자동 로그인
         val gsa = GoogleSignIn.getLastSignedInAccount(this)
         if(gsa != null){
-            moveToMainActivity()
+//            moveToMainActivity()
         }
         super.onCreate(savedInstanceState)
         installSplashScreen()
@@ -83,61 +81,7 @@ class LoginActivity : AppCompatActivity() {
             if(TextUtils.isEmpty(loginID.text) || !android.util.Patterns.EMAIL_ADDRESS.matcher(loginID.text as CharSequence).matches() || TextUtils.isEmpty(loginPW.text)) {
                 showFailToLoginDialog(-1)
             } else {
-                var loginFailed = true
-                var errorCode = -1
-                val signupRequest = GlobalScope.launch {
-                    val url = URL(BuildConfig.server_url + "/user/login")
-                    val conn = url.openConnection() as HttpURLConnection
-                    try {
-                        conn.requestMethod = "POST"
-                        conn.setRequestProperty("Content-Type", "application/json; utf-8")
-                        conn.setRequestProperty("Accept", "application/json")
-                        conn.doOutput = true
-                        conn.doInput = true
-
-                        val requestJson = HashMap<String, String>()
-                        requestJson["Email"] = loginID.text.toString()
-                        requestJson["Password"] = loginPW.text.toString()
-
-                        conn.outputStream.use { os ->
-                            val input: ByteArray =
-                                Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
-                            os.write(input, 0, input.size)
-                            os.flush()
-                        }
-
-                        when(conn.responseCode){
-                            401 -> errorCode = 401
-                            200 -> {
-                                val inputStream = conn.inputStream
-                                if(inputStream != null){
-                                    val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
-                                    val responseJson = JSONObject(returnBody.trim())
-                                    Log.d("receive data", responseJson.toString())
-                                    if(responseJson.has("access_token")){
-                                        loginFailed = false
-                                        val editor = prefManager.edit()
-                                        editor.putString("access_token", responseJson["access_token"].toString()).apply()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    catch (e : Exception){
-                        Log.e("Sign in error", e.message!!)
-                    }
-                    finally {
-                        conn.disconnect()
-                    }
-                }
-                runBlocking {
-                    signupRequest.join()
-                    if(loginFailed){
-                        showFailToLoginDialog(errorCode)
-                    } else{
-                        moveToMainActivity()
-                    }
-                }
+                signInWithEmail(loginID.text.toString(), loginPW.text.toString())
             }
         }
 
@@ -202,6 +146,17 @@ class LoginActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    // 소셜 로그인 사용자가 등록되어 있지 않을 때
+    private fun showFailToOauthLoginDialog(){
+        val dialogBuilder = AlertDialog.Builder(this)
+            .setTitle("등록되지 않은 사용자")
+            .setMessage("등록되어 있지 않는 계정입니다. 닉네임 생성 화면으로 이동합니다.")
+            .setPositiveButton("닉네임 생성하기") { _: DialogInterface, _: Int ->
+            }
+        val dialog = dialogBuilder.create()
+        dialog.show()
+    }
+
     private fun moveToMainActivity(){
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
@@ -215,7 +170,7 @@ class LoginActivity : AppCompatActivity() {
     }
     private fun updateUIWithGoogle(user: FirebaseUser?){
         if(user != null){
-            moveToMainActivity()
+//            moveToMainActivity()
         }
     }
 
@@ -228,8 +183,9 @@ class LoginActivity : AppCompatActivity() {
             try {
                 // Google Sign In was successful, authenticate with Firebase
                 val account = task.getResult(ApiException::class.java)!!
-                Log.d(TAG, "firebaseAuthWithGoogle:" + account.idToken)
-                signInWithGoogle()
+                Log.d(TAG, "Token from Google:" + account.idToken)
+                Log.d(TAG, "Email from Google:" + account.email)
+                signInWithOauth(account.idToken!!, account.email!!, "google")
             } catch (e: ApiException) {
                 // Google Sign In failed, update UI appropriately
                 Log.w(TAG, "Google sign in failed", e)
@@ -237,7 +193,126 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun signInWithGoogle() {
-        moveToMainActivity()
+    private fun signInWithOauth(token: String, email: String, provider: String) {
+        var loginFailed = true
+        var errorCode = -1
+        val signupRequest = GlobalScope.launch {
+            val url = URL(BuildConfig.server_url + "/user/login/oauth")
+            val conn = url.openConnection() as HttpURLConnection
+            val prefManager = this@LoginActivity.getPreferences(0)
+
+            try {
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.setRequestProperty("Accept", "application/json")
+                conn.doOutput = true
+                conn.doInput = true
+
+                val requestJson = HashMap<String, String>()
+                requestJson["Email"] = email
+                requestJson["Uid"] = token
+                requestJson["Provider"] = provider
+
+                conn.outputStream.use { os ->
+                    val input: ByteArray =
+                        Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                    os.write(input, 0, input.size)
+                    os.flush()
+                }
+
+                when(conn.responseCode){
+                    200 -> {
+                        val inputStream = conn.inputStream
+                        if(inputStream != null){
+                            val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                            val responseJson = JSONObject(returnBody.trim())
+                            Log.d("receive data", responseJson.toString())
+                            if(responseJson.has("access_token")){
+                                loginFailed = false
+                                val editor = prefManager.edit()
+                                editor.putString("access_token", responseJson["access_token"].toString()).apply()
+                            }
+                        }
+                    }
+                    else -> errorCode = conn.responseCode
+                }
+            }
+            catch (e : Exception){
+                Log.e("Sign in error", e.message!!)
+            }
+            finally {
+                conn.disconnect()
+            }
+        }
+        runBlocking {
+            signupRequest.join()
+            if(loginFailed){
+                when(errorCode){
+                    401 -> showFailToLoginDialog(errorCode)
+                    409 -> showFailToOauthLoginDialog()
+                }
+            } else{
+                moveToMainActivity()
+            }
+        }
+    }
+
+    private fun signInWithEmail(email : String, password : String){
+        var loginFailed = true
+        var errorCode = -1
+        val prefManager = this@LoginActivity.getPreferences(0)
+        val signupRequest = GlobalScope.launch {
+            val url = URL(BuildConfig.server_url + "/user/login")
+            val conn = url.openConnection() as HttpURLConnection
+            try {
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.setRequestProperty("Accept", "application/json")
+                conn.doOutput = true
+                conn.doInput = true
+
+                val requestJson = HashMap<String, String>()
+                requestJson["Email"] = email
+                requestJson["Password"] = password
+
+                conn.outputStream.use { os ->
+                    val input: ByteArray =
+                        Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                    os.write(input, 0, input.size)
+                    os.flush()
+                }
+
+                when(conn.responseCode){
+                    401 -> errorCode = 401
+                    200 -> {
+                        val inputStream = conn.inputStream
+                        if(inputStream != null){
+                            val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                            val responseJson = JSONObject(returnBody.trim())
+                            Log.d("receive data", responseJson.toString())
+                            if(responseJson.has("access_token")){
+                                loginFailed = false
+                                val editor = prefManager.edit()
+                                editor.putString("access_token", responseJson["access_token"].toString()).apply()
+                            }
+                        }
+                    }
+                }
+            }
+            catch (e : Exception){
+                Log.e("Sign in error", e.message!!)
+            }
+            finally {
+                conn.disconnect()
+            }
+        }
+        runBlocking {
+            signupRequest.join()
+            if(loginFailed){
+                showFailToLoginDialog(errorCode)
+            } else{
+                moveToMainActivity()
+            }
+        }
     }
 }
