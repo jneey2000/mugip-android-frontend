@@ -10,6 +10,7 @@ import android.graphics.drawable.BitmapDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.util.Patterns
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -45,18 +46,26 @@ class SignupActivity : AppCompatActivity() {
         val nicknameInput = findViewById<EditText>(R.id.sign_up_nickname)
         val emailInput = findViewById<EditText>(R.id.sign_up_email)
         val emailDuplicateString = findViewById<TextView>(R.id.sign_up_email_duplicate_string)
+        var duplicateEmail = false
 
         emailDuplicateString.visibility = View.INVISIBLE
         emailInput.setOnFocusChangeListener { _, hasFocus ->
             if(!hasFocus && emailInput.text.isNotEmpty()){
-                val duplicateEmail = checkDuplicateEmail(emailInput.text.toString())
+                duplicateEmail = checkDuplicateEmail(emailInput.text.toString())
                 emailDuplicateString.visibility = View.VISIBLE
-                if(duplicateEmail){
-                    emailDuplicateString.text = "이미 가입된 이메일입니다."
-                    emailDuplicateString.setTextColor(Color.RED)
-                } else{
-                    emailDuplicateString.text = "사용가능한 이메일입니다."
-                    emailDuplicateString.setTextColor(ContextCompat.getColor(this, R.color.primary))
+                when {
+                    duplicateEmail -> {
+                        emailDuplicateString.text = "이미 가입된 이메일입니다."
+                        emailDuplicateString.setTextColor(Color.RED)
+                    }
+                    Patterns.EMAIL_ADDRESS.matcher(emailInput.text.toString()).matches() -> {
+                        emailDuplicateString.text = "사용가능한 이메일입니다."
+                        emailDuplicateString.setTextColor(ContextCompat.getColor(this, R.color.primary))
+                    }
+                    else -> {
+                        emailDuplicateString.text = "올바른 이메일 형식이 아닙니다."
+                        emailDuplicateString.setTextColor(Color.RED)
+                    }
                 }
             } else if(emailInput.text.isEmpty()){
                 emailDuplicateString.visibility = View.INVISIBLE
@@ -84,57 +93,73 @@ class SignupActivity : AppCompatActivity() {
 
         val signupButton = findViewById<Button>(R.id.btn_sign_up)
         signupButton.setOnClickListener {
-            var signUpFailed = true
-            var errorCode = -1
-            val signupRequest = GlobalScope.launch {
-                val url = URL(BuildConfig.server_url + "/user/signup")
-                val conn = url.openConnection() as HttpURLConnection
-                try {
-                    conn.requestMethod = "POST"
-                    conn.setRequestProperty("Content-Type", "application/json; utf-8")
-                    conn.setRequestProperty("Accept", "application/json")
-                    conn.doOutput = true
-                    conn.doInput = true
+            if(emailInput.text.toString().isEmpty()){
+                showDialog("이메일을 입력해주십시오.")
+            } else if(duplicateEmail){
+                showDialog("이미 가입된 이메일입니다.")
+            } else if(!Patterns.EMAIL_ADDRESS.matcher(emailInput.text.toString()).matches()){
+                showDialog("올바른 이메일 형식이 아닙니다.")
+            } else if(idInput.text.toString().isEmpty()){
+                showDialog("아이디를 입력해주십시오.")
+            } else if(nicknameInput.text.toString().isEmpty()) {
+                showDialog("닉네임을 입력해주십시오.")
+            } else if(passwordInput.text.toString().isEmpty() || passwordConfirmInput.text.toString().isEmpty()){
+                showDialog("비밀번호를 입력해주세요.")
+            } else if(passwordInput.text.toString() != passwordConfirmString.text.toString()){
+                showDialog("비밀번호 확인 입력창에 동일한 비밀번호를 입력해주세요.")
+            } else {
+                var signUpFailed = true
+                var errorCode = -1
+                val signupRequest = GlobalScope.launch {
+                    val url = URL(BuildConfig.server_url + "/user/signup")
+                    val conn = url.openConnection() as HttpURLConnection
+                    try {
+                        conn.requestMethod = "POST"
+                        conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                        conn.setRequestProperty("Accept", "application/json")
+                        conn.doOutput = true
+                        conn.doInput = true
 
-                    val requestJson = HashMap<String, String>()
-                    requestJson["nickname"] = nicknameInput.text.toString()
-                    requestJson["username"] = idInput.text.toString()
-                    requestJson["email"] = emailInput.text.toString()
-                    requestJson["password"] = passwordInput.text.toString()
+                        val requestJson = HashMap<String, String>()
+                        requestJson["nickname"] = nicknameInput.text.toString()
+                        requestJson["username"] = idInput.text.toString()
+                        requestJson["email"] = emailInput.text.toString()
+                        requestJson["password"] = passwordInput.text.toString()
 
-                    conn.outputStream.use { os ->
-                        val input: ByteArray =
-                            Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
-                        os.write(input, 0, input.size)
-                        os.flush()
-                    }
+                        conn.outputStream.use { os ->
+                            val input: ByteArray =
+                                Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                            os.write(input, 0, input.size)
+                            os.flush()
+                        }
 
-                    when(conn.responseCode){
-                        401 -> errorCode = 401
-                        200 -> {
-                            val inputStream = conn.inputStream
-                            if(inputStream != null){
-                                val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
-                                val responseJson = JSONObject(returnBody.trim())
-                                Log.d("received data", responseJson.toString())
-                                signUpFailed = false
+                        when(conn.responseCode){
+                            401 -> errorCode = 401
+                            200 -> {
+                                val inputStream = conn.inputStream
+                                if(inputStream != null){
+                                    val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                                    val responseJson = JSONObject(returnBody.trim())
+                                    Log.d("received data", responseJson.toString())
+                                    signUpFailed = false
+                                }
                             }
                         }
                     }
+                    catch (e : Exception){
+                        Log.e("Sign in error", e.message!!)
+                    }
+                    finally {
+                        conn.disconnect()
+                    }
                 }
-                catch (e : Exception){
-                    Log.e("Sign in error", e.message!!)
-                }
-                finally {
-                    conn.disconnect()
-                }
-            }
-            runBlocking {
-                signupRequest.join()
-                if(signUpFailed){
-                    showFailToLoginDialog(errorCode)
-                } else{
-                    showSuccessToSignUpDialog()
+                runBlocking {
+                    signupRequest.join()
+                    if(signUpFailed){
+                        showFailToLoginDialog(errorCode)
+                    } else{
+                        showSuccessToSignUpDialog()
+                    }
                 }
             }
         }
@@ -197,9 +222,19 @@ class SignupActivity : AppCompatActivity() {
         val dialogBuilder = AlertDialog.Builder(this)
             .setTitle("회원가입 실패")
             .setMessage("회원가입에 실패했습니다.($errorCode)")
-            .setPositiveButton("뒤로 가기", DialogInterface.OnClickListener(){
-                    _: DialogInterface, _: Int ->
-            })
+            .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
+            }
+        val dialog = dialogBuilder.create()
+        dialog.show()
+    }
+
+    // 에러 팝업을 띄울 때
+    private fun showDialog(message: String){
+        val dialogBuilder = AlertDialog.Builder(this)
+            .setTitle("회원가입 실패")
+            .setMessage(message)
+            .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
+            }
         val dialog = dialogBuilder.create()
         dialog.show()
     }
