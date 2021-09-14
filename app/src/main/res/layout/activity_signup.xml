@@ -73,7 +73,16 @@
               >
           </EditText>
         </LinearLayout>
-
+        <TextView
+            android:id="@+id/sign_up_email_duplicate_string"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="90dp"
+            android:text="이미 가입된 이메일입니다."
+            android:textColor="#ff0000"
+            android:gravity="center"
+            android:layout_marginBottom="10dp"
+            />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="40dp"
@@ -187,6 +196,7 @@
             android:id="@+id/sign_up_password_confirm_string"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="90dp"
             android:text="비밀번호가 올바르지 않습니다."
             android:textColor="#ff0000"
             android:gravity="center"

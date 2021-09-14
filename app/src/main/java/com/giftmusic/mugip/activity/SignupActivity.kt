@@ -44,6 +44,24 @@ class SignupActivity : AppCompatActivity() {
         val passwordConfirmString = findViewById<TextView>(R.id.sign_up_password_confirm_string)
         val nicknameInput = findViewById<EditText>(R.id.sign_up_nickname)
         val emailInput = findViewById<EditText>(R.id.sign_up_email)
+        val emailDuplicateString = findViewById<TextView>(R.id.sign_up_email_duplicate_string)
+
+        emailDuplicateString.visibility = View.INVISIBLE
+        emailInput.setOnFocusChangeListener { _, hasFocus ->
+            if(!hasFocus && emailInput.text.isNotEmpty()){
+                val duplicateEmail = checkDuplicateEmail(emailInput.text.toString())
+                emailDuplicateString.visibility = View.VISIBLE
+                if(duplicateEmail){
+                    emailDuplicateString.text = "이미 가입된 이메일입니다."
+                    emailDuplicateString.setTextColor(Color.RED)
+                } else{
+                    emailDuplicateString.text = "사용가능한 이메일입니다."
+                    emailDuplicateString.setTextColor(ContextCompat.getColor(this, R.color.primary))
+                }
+            } else if(emailInput.text.isEmpty()){
+                emailDuplicateString.visibility = View.INVISIBLE
+            }
+        }
 
         passwordConfirmString.visibility = View.INVISIBLE
         passwordConfirmInput.addTextChangedListener {
@@ -63,7 +81,6 @@ class SignupActivity : AppCompatActivity() {
                 }
             }
         }
-
 
         val signupButton = findViewById<Button>(R.id.btn_sign_up)
         signupButton.setOnClickListener {
@@ -116,11 +133,65 @@ class SignupActivity : AppCompatActivity() {
                 signupRequest.join()
                 if(signUpFailed){
                     showFailToLoginDialog(errorCode)
+                } else{
+                    showSuccessToSignUpDialog()
                 }
             }
         }
     }
 
+    // 이메일 중복 체크
+    private fun checkDuplicateEmail(email : String): Boolean {
+        var isDuplicated = false
+        val checkEmailRequest = GlobalScope.launch {
+            val url = URL(BuildConfig.server_url + "/user/email/check?email=" + email)
+            val conn = url.openConnection() as HttpURLConnection
+            try {
+                conn.requestMethod = "GET"
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.setRequestProperty("Accept", "application/json")
+                conn.doInput = true
+
+                when(conn.responseCode){
+                    200 -> {
+                        val inputStream = conn.inputStream
+                        if(inputStream != null){
+                            val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                            val responseJson = JSONObject(returnBody.trim())
+                            if(responseJson.has("exists")){
+                                isDuplicated = true
+                            }
+                        }
+                    }
+
+
+                }
+            }
+            catch (e : Exception){
+                Log.e("Check duplicate email error", e.message!!)
+            }
+            finally {
+                conn.disconnect()
+            }
+        }
+        runBlocking {
+            checkEmailRequest.join()
+        }
+        return isDuplicated
+    }
+
+    // 로그인 성공할 때
+    private fun showSuccessToSignUpDialog(){
+        val dialogBuilder = AlertDialog.Builder(this)
+            .setTitle("회원가입 성공")
+            .setMessage("회원가입에 성공했습니다.")
+            .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
+                finish()
+            }
+        val dialog = dialogBuilder.create()
+        dialog.show()
+    }
+    
     // 로그인 실패할 때
     private fun showFailToLoginDialog(errorCode: Int){
         val dialogBuilder = AlertDialog.Builder(this)
