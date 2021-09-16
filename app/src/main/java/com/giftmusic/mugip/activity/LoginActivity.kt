@@ -16,6 +16,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.giftmusic.mugip.BuildConfig
+import com.giftmusic.mugip.GlobalApplication
 import com.giftmusic.mugip.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -27,6 +28,8 @@ import com.google.gson.Gson
 import com.kakao.sdk.auth.AuthApiClient
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.user.UserApiClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -40,8 +43,9 @@ import java.net.URL
 class LoginActivity : AppCompatActivity() {
     private lateinit var auth : FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
-    override fun onCreate(savedInstanceState: Bundle?) {
 
+
+    override fun onCreate(savedInstanceState: Bundle?) {
         // 자동 앱 로그인(카카오)
         if(AuthApiClient.instance.hasToken()){
             UserApiClient.instance.accessTokenInfo{_, error ->
@@ -78,10 +82,12 @@ class LoginActivity : AppCompatActivity() {
         val loginID = findViewById<EditText>(R.id.email_login_id)
         val loginPW = findViewById<EditText>(R.id.email_login_password)
         loginButton.setOnClickListener{
-            if(TextUtils.isEmpty(loginID.text) || !android.util.Patterns.EMAIL_ADDRESS.matcher(loginID.text as CharSequence).matches() || TextUtils.isEmpty(loginPW.text)) {
+            if(TextUtils.isEmpty(loginID.text.toString()) || !android.util.Patterns.EMAIL_ADDRESS.matcher(loginID.text.toString() as CharSequence).matches() || TextUtils.isEmpty(loginPW.text.toString())) {
                 showFailToLoginDialog(-1)
             } else {
+                (application as GlobalApplication).getInstance().progressSet("로그인 중입니다.")
                 signInWithEmail(loginID.text.toString(), loginPW.text.toString())
+                (application as GlobalApplication).getInstance().progressOFF()
             }
         }
 
@@ -263,11 +269,11 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun signInWithEmail(email : String, password : String){
+    private fun signInWithEmail(email : String, password : String): Boolean {
         var loginFailed = true
         var errorCode = -1
         val prefManager = this@LoginActivity.getPreferences(0)
-        val signupRequest = GlobalScope.launch {
+        val signupRequest = CoroutineScope(Main).launch {
             val url = URL(BuildConfig.server_url + "/user/login")
             val conn = url.openConnection() as HttpURLConnection
             try {
@@ -276,6 +282,8 @@ class LoginActivity : AppCompatActivity() {
                 conn.setRequestProperty("Accept", "application/json")
                 conn.doOutput = true
                 conn.doInput = true
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
 
                 val requestJson = HashMap<String, String>()
                 requestJson["Email"] = email
@@ -314,11 +322,8 @@ class LoginActivity : AppCompatActivity() {
         }
         runBlocking {
             signupRequest.join()
-            if(loginFailed){
-                showFailToLoginDialog(errorCode)
-            } else{
-                moveToMainActivity()
-            }
         }
+
+        return loginFailed
     }
 }
