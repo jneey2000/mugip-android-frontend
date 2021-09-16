@@ -147,12 +147,15 @@ class LoginActivity : AppCompatActivity() {
     }
 
     // 소셜 로그인 사용자가 등록되어 있지 않을 때
-    private fun showFailToOauthLoginDialog(){
+    private fun showFailToOauthLoginDialog(email: String, token: String, provider: String){
         val dialogBuilder = AlertDialog.Builder(this)
             .setTitle("등록되지 않은 사용자")
             .setMessage("등록되어 있지 않는 계정입니다. 닉네임 생성 화면으로 이동합니다.")
             .setPositiveButton("닉네임 생성하기") { _: DialogInterface, _: Int ->
                 val intent = Intent(this, SignUpOauthActivity::class.java)
+                intent.putExtra("email", email)
+                intent.putExtra("token", token)
+                intent.putExtra("provider", provider)
                 startActivity(intent)
                 finish()
             }
@@ -252,7 +255,7 @@ class LoginActivity : AppCompatActivity() {
             if(loginFailed){
                 when(errorCode){
                     401 -> showFailToLoginDialog(errorCode)
-                    409 -> showFailToOauthLoginDialog()
+                    409 -> showFailToOauthLoginDialog(email, token, provider)
                 }
             } else{
                 moveToMainActivity()
