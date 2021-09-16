@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/oauth_nickname_activity_background"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,6 +10,8 @@
     tools:context=".activity.SignUpOauthActivity"
     android:paddingTop="50dp"
     android:paddingHorizontal="20dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     >
 
 
@@ -35,6 +38,8 @@
         app:boxStrokeWidth="0dp"
         app:boxStrokeWidthFocused="0dp"
         android:hint="닉네임"
+        android:textColorHint="@android:color/darker_gray"
+        android:textColor="@color/primary"
         android:background="@drawable/edit_text_border"
         android:layout_marginBottom="10dp"
         android:inputType="text"
