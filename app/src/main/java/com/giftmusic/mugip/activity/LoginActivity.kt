@@ -31,7 +31,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
 import org.json.JSONObject
 import java.io.BufferedReader
-import java.net.ConnectException
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
@@ -57,7 +56,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
 
         // 구글 로그인
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id)).requestEmail().build()
+            .requestId().requestEmail().build()
 
         // 구글 자동 로그인
         val gsa = GoogleSignIn.getLastSignedInAccount(this)
@@ -138,12 +137,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                     Log.e(TAG, "사용자 정보 요청 실패", error)
                 }
                 else if (user != null) {
-                    Log.i(TAG, "사용자 정보 요청 성공" +
-                            "\n회원번호: ${user.id}" +
-                            "\n이메일: ${user.kakaoAccount?.email}" +
-                            "\n닉네임: ${user.kakaoAccount?.profile?.nickname}" +
-                            "\n프로필사진: ${user.kakaoAccount?.profile?.thumbnailImageUrl}")
-                    moveToMainActivity()
+                    signInWithOauth(user.id.toString(), user.kakaoAccount?.email!!, "kakao")
                 }
             }
         }
@@ -216,7 +210,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                 // Google Sign In was successful, authenticate with Firebase
                 val account = task.getResult(ApiException::class.java)!!
                 progressOn("Google 로그인 중..")
-                signInWithOauth(account.idToken!!, account.email!!, "google")
+                signInWithOauth(account.id!!, account.email!!, "google")
             } catch (e: ApiException) {
                 // Google Sign In failed, update UI appropriately
                 Log.w(TAG, "Google sign in failed", e)
@@ -224,14 +218,13 @@ class LoginActivity : BaseActivity(), CoroutineScope {
         }
     }
 
-    private fun signInWithOauth(token: String, email: String, provider: String) {
+    private fun signInWithOauth(uid: String, email: String, provider: String) {
         var loginFailed = true
         var errorCode = -1
         launch {
             val url = URL(BuildConfig.server_url + "/user/login/oauth")
             val conn = url.openConnection() as HttpURLConnection
             val prefManager = this@LoginActivity.getPreferences(0)
-
             try {
                 conn.requestMethod = "POST"
                 conn.setRequestProperty("Content-Type", "application/json; utf-8")
@@ -241,7 +234,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
 
                 val requestJson = HashMap<String, String>()
                 requestJson["Email"] = email
-                requestJson["Uid"] = token
+                requestJson["Uid"] = uid
                 requestJson["Provider"] = provider
 
                 conn.outputStream.use { os ->
@@ -280,7 +273,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                 if(loginFailed){
                     when(errorCode){
                         401 -> showFailToLoginDialog(errorCode)
-                        409 -> showFailToOauthLoginDialog(email, token, provider)
+                        409 -> showFailToOauthLoginDialog(email, uid, provider)
                     }
                 } else{
                     moveToMainActivity()
