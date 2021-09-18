@@ -19,26 +19,32 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.addTextChangedListener
+import com.giftmusic.mugip.BaseActivity
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers.Main
 import org.json.JSONObject
 import java.io.*
 import java.lang.StringBuilder
 import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
 import java.net.URL
+import kotlin.coroutines.CoroutineContext
 
-class SignupActivity : AppCompatActivity() {
+class SignupActivity : BaseActivity(), CoroutineScope {
+    private lateinit var job: Job
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + job
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signup)
-
+        job = Job()
         val idInput = findViewById<EditText>(R.id.sign_up_id)
         val passwordInput = findViewById<EditText>(R.id.sign_up_password)
         val passwordConfirmInput = findViewById<EditText>(R.id.sign_up_password_confirm)
@@ -51,13 +57,8 @@ class SignupActivity : AppCompatActivity() {
         emailDuplicateString.visibility = View.INVISIBLE
         emailInput.setOnFocusChangeListener { _, hasFocus ->
             if(!hasFocus && emailInput.text.isNotEmpty()){
-                duplicateEmail = checkDuplicateEmail(emailInput.text.toString())
-                emailDuplicateString.visibility = View.VISIBLE
+                progressOn()
                 when {
-                    duplicateEmail -> {
-                        emailDuplicateString.text = "이미 가입된 이메일입니다."
-                        emailDuplicateString.setTextColor(Color.RED)
-                    }
                     Patterns.EMAIL_ADDRESS.matcher(emailInput.text.toString()).matches() -> {
                         emailDuplicateString.text = "사용가능한 이메일입니다."
                         emailDuplicateString.setTextColor(ContextCompat.getColor(this, R.color.primary))
@@ -67,6 +68,7 @@ class SignupActivity : AppCompatActivity() {
                         emailDuplicateString.setTextColor(Color.RED)
                     }
                 }
+                checkDuplicateEmail(emailInput.text.toString())
             } else if(emailInput.text.isEmpty()){
                 emailDuplicateString.visibility = View.INVISIBLE
             }
@@ -110,7 +112,8 @@ class SignupActivity : AppCompatActivity() {
             } else {
                 var signUpFailed = true
                 var errorCode = -1
-                val signupRequest = GlobalScope.launch {
+                progressOn("회원가입 시도 중...")
+                launch {
                     val url = URL(BuildConfig.server_url + "/user/signup")
                     val conn = url.openConnection() as HttpURLConnection
                     try {
@@ -146,19 +149,23 @@ class SignupActivity : AppCompatActivity() {
                             }
                         }
                     }
+                    catch (e : SocketTimeoutException){
+                        signUpFailed = true
+                        duplicateEmail = true
+                    }
                     catch (e : Exception){
                         Log.e("Sign in error", e.message!!)
                     }
                     finally {
                         conn.disconnect()
                     }
-                }
-                runBlocking {
-                    signupRequest.join()
-                    if(signUpFailed){
-                        showFailToLoginDialog(errorCode)
-                    } else{
-                        showSuccessToSignUpDialog()
+
+                    withContext(Main){
+                        if(signUpFailed){
+                            showFailToLoginDialog(errorCode)
+                        } else{
+                            showSuccessToSignUpDialog()
+                        }
                     }
                 }
             }
@@ -166,16 +173,19 @@ class SignupActivity : AppCompatActivity() {
     }
 
     // 이메일 중복 체크
-    private fun checkDuplicateEmail(email : String): Boolean {
+    private fun checkDuplicateEmail(email : String){
         var isDuplicated = false
-        val checkEmailRequest = GlobalScope.launch {
-            val url = URL(BuildConfig.server_url + "/user/email/check?email=" + email)
+        var connected = true
+        launch {
+            val url = URL(BuildConfig.server_url + "/user/check/email?email=" + email)
             val conn = url.openConnection() as HttpURLConnection
             try {
                 conn.requestMethod = "GET"
                 conn.setRequestProperty("Content-Type", "application/json; utf-8")
                 conn.setRequestProperty("Accept", "application/json")
                 conn.doInput = true
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
 
                 when(conn.responseCode){
                     200 -> {
@@ -183,7 +193,7 @@ class SignupActivity : AppCompatActivity() {
                         if(inputStream != null){
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                             val responseJson = JSONObject(returnBody.trim())
-                            if(responseJson.has("exists")){
+                            if(responseJson.has("exists") && responseJson.getBoolean("exists")){
                                 isDuplicated = true
                             }
                         }
@@ -192,17 +202,39 @@ class SignupActivity : AppCompatActivity() {
 
                 }
             }
+            catch (e : SocketTimeoutException){
+                connected = false
+            }
             catch (e : Exception){
                 Log.e("Check duplicate email error", e.message!!)
             }
             finally {
                 conn.disconnect()
             }
+
+            withContext(Main){
+                val emailDuplicateString = findViewById<TextView>(R.id.sign_up_email_duplicate_string)
+                progressOFF()
+                if (!connected){
+                    val dialogBuilder = AlertDialog.Builder(this@SignupActivity)
+                        .setTitle("중복 이메일 검증 실패")
+                        .setMessage("서버 연결에 실패하여 이메일 검증에 실패하였습니다.")
+                        .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int -> }
+                    val dialog = dialogBuilder.create()
+                    dialog.show()
+                    emailDuplicateString.text = "이메일 검증에 실패했습니다."
+                    emailDuplicateString.setTextColor(Color.RED)
+
+                } else if(isDuplicated){
+                    emailDuplicateString.text = "이미 가입된 이메일입니다."
+                    emailDuplicateString.setTextColor(Color.RED)
+                } else if(!isDuplicated){
+                    emailDuplicateString.text = "사용 가능한 이메일입니다."
+                    emailDuplicateString.setTextColor(resources.getColor(R.color.primary))
+                }
+                emailDuplicateString.visibility = View.VISIBLE
+            }
         }
-        runBlocking {
-            checkEmailRequest.join()
-        }
-        return isDuplicated
     }
 
     // 로그인 성공할 때
@@ -219,11 +251,19 @@ class SignupActivity : AppCompatActivity() {
     
     // 로그인 실패할 때
     private fun showFailToLoginDialog(errorCode: Int){
-        val dialogBuilder = AlertDialog.Builder(this)
-            .setTitle("회원가입 실패")
-            .setMessage("회원가입에 실패했습니다.($errorCode)")
-            .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
-            }
+        val dialogBuilder : AlertDialog.Builder = if (errorCode == -1){
+            AlertDialog.Builder(this)
+                .setTitle("회원가입 실패")
+                .setMessage("회원가입에 실패했습니다.($errorCode)")
+                .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
+                }
+        } else {
+            AlertDialog.Builder(this)
+                .setTitle("회원가입 실패")
+                .setMessage("회원가입에 실패했습니다.($errorCode)")
+                .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
+                }
+        }
         val dialog = dialogBuilder.create()
         dialog.show()
     }
