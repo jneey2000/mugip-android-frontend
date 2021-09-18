@@ -29,6 +29,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
 import org.json.JSONObject
+import org.w3c.dom.Text
 import java.io.*
 import java.lang.StringBuilder
 import java.net.HttpURLConnection
@@ -50,6 +51,7 @@ class SignupActivity : BaseActivity(), CoroutineScope {
         val passwordConfirmInput = findViewById<EditText>(R.id.sign_up_password_confirm)
         val passwordConfirmString = findViewById<TextView>(R.id.sign_up_password_confirm_string)
         val nicknameInput = findViewById<EditText>(R.id.sign_up_nickname)
+        val nicknameDuplicateString = findViewById<TextView>(R.id.sign_up_nickname_duplicate_string)
         val emailInput = findViewById<EditText>(R.id.sign_up_email)
         val emailDuplicateString = findViewById<TextView>(R.id.sign_up_email_duplicate_string)
         var duplicateEmail = false
@@ -71,6 +73,16 @@ class SignupActivity : BaseActivity(), CoroutineScope {
                 checkDuplicateEmail(emailInput.text.toString())
             } else if(emailInput.text.isEmpty()){
                 emailDuplicateString.visibility = View.INVISIBLE
+            }
+        }
+
+        nicknameDuplicateString.visibility = View.INVISIBLE
+        nicknameInput.setOnFocusChangeListener { _, hasFocus ->
+            if(!hasFocus && nicknameInput.text.isNotEmpty()){
+                progressOn("닉네임 검증 중...")
+                checkDuplicateNickname(nicknameInput.text.toString())
+            } else if(nicknameInput.text.isEmpty()){
+                nicknameDuplicateString.visibility = View.INVISIBLE
             }
         }
 
@@ -233,6 +245,71 @@ class SignupActivity : BaseActivity(), CoroutineScope {
                     emailDuplicateString.setTextColor(resources.getColor(R.color.primary))
                 }
                 emailDuplicateString.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    // 닉네임 중복 체크
+    private fun checkDuplicateNickname(nickName : String){
+        var isDuplicated = false
+        var connected = true
+        launch {
+            val url = URL(BuildConfig.server_url + "/user/check/nickname?nickname=" + nickName)
+            val conn = url.openConnection() as HttpURLConnection
+            try {
+                conn.requestMethod = "GET"
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.setRequestProperty("Accept", "application/json")
+                conn.doInput = true
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+
+                when(conn.responseCode){
+                    200 -> {
+                        val inputStream = conn.inputStream
+                        if(inputStream != null){
+                            val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                            val responseJson = JSONObject(returnBody.trim())
+                            if(responseJson.has("exists") && responseJson.getBoolean("exists")){
+                                isDuplicated = true
+                            }
+                        }
+                    }
+
+
+                }
+            }
+            catch (e : SocketTimeoutException){
+                connected = false
+            }
+            catch (e : Exception){
+                Log.e("Check duplicate nickname error", e.message!!)
+            }
+            finally {
+                conn.disconnect()
+            }
+
+            withContext(Main){
+                val nicknameDuplicateString = findViewById<TextView>(R.id.sign_up_nickname_duplicate_string)
+                progressOFF()
+                if (!connected){
+                    val dialogBuilder = AlertDialog.Builder(this@SignupActivity)
+                        .setTitle("중복 닉네임 검증 실패")
+                        .setMessage("서버 연결에 실패하여 닉네임 검증에 실패하였습니다.")
+                        .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int -> }
+                    val dialog = dialogBuilder.create()
+                    dialog.show()
+                    nicknameDuplicateString.text = "닉네임 검증에 실패했습니다."
+                    nicknameDuplicateString.setTextColor(Color.RED)
+
+                } else if(isDuplicated){
+                    nicknameDuplicateString.text = "이미 등록된 닉네임입니다."
+                    nicknameDuplicateString.setTextColor(Color.RED)
+                } else if(!isDuplicated){
+                    nicknameDuplicateString.text = "사용 가능한 닉네임입니다."
+                    nicknameDuplicateString.setTextColor(resources.getColor(R.color.primary))
+                }
+                nicknameDuplicateString.visibility = View.VISIBLE
             }
         }
     }
