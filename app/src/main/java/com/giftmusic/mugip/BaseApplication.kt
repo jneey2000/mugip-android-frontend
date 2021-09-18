@@ -7,17 +7,19 @@ import com.kakao.sdk.common.KakaoSdk
 import android.text.TextUtils
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.view.View
-import android.widget.ImageView
-
 import android.widget.TextView
 
 
 
 
-class GlobalApplication : Application() {
-    private lateinit var globalApplication: GlobalApplication
+class BaseApplication : Application() {
     private var progressDialog : AppCompatDialog? = null
+    companion object{
+        lateinit var baseApplication : BaseApplication
+        fun getInstance() : BaseApplication{
+            return baseApplication
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -25,14 +27,10 @@ class GlobalApplication : Application() {
 
         // Kakao SDK 초기화
         KakaoSdk.init(this, BuildConfig.kakao_api_key)
-        globalApplication = this
+        baseApplication = this
     }
 
-    fun getInstance() : GlobalApplication{
-        return globalApplication
-    }
-
-    fun progressON(activity : Activity?, message: String) {
+    fun progressON(activity : Activity?, message: String?) {
         if (activity == null || activity.isFinishing) {
             return
         }
@@ -48,7 +46,6 @@ class GlobalApplication : Application() {
 
         }
 
-        val imageLoadingFrame = progressDialog!!.findViewById<ImageView>(R.id.iv_frame_loading)!!
         val progressMessage = progressDialog!!.findViewById<TextView>(R.id.tv_progress_message)!!
         if (!TextUtils.isEmpty(message)) {
             progressMessage.text = message
