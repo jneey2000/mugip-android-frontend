@@ -119,7 +119,7 @@ class SignupActivity : BaseActivity(), CoroutineScope {
                 showDialog("닉네임을 입력해주십시오.")
             } else if(passwordInput.text.toString().isEmpty() || passwordConfirmInput.text.toString().isEmpty()){
                 showDialog("비밀번호를 입력해주세요.")
-            } else if(passwordInput.text.toString() != passwordConfirmString.text.toString()){
+            } else if(passwordInput.text.toString() != passwordConfirmInput.text.toString()){
                 showDialog("비밀번호 확인 입력창에 동일한 비밀번호를 입력해주세요.")
             } else {
                 var signUpFailed = true
