@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.content.ContentValues.TAG
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
@@ -13,10 +12,10 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.text.isDigitsOnly
+import com.giftmusic.mugip.BaseActivity
 import com.giftmusic.mugip.BuildConfig
-import com.giftmusic.mugip.GlobalApplication
 import com.giftmusic.mugip.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -28,24 +27,25 @@ import com.google.gson.Gson
 import com.kakao.sdk.auth.AuthApiClient
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.user.UserApiClient
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.lang.StringBuilder
+import java.net.ConnectException
 import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
 import java.net.URL
+import kotlin.coroutines.CoroutineContext
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity(), CoroutineScope {
     private lateinit var auth : FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
-
+    private lateinit var job: Job
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + job
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        job = Job()
         // 자동 앱 로그인(카카오)
         if(AuthApiClient.instance.hasToken()){
             UserApiClient.instance.accessTokenInfo{_, error ->
@@ -85,9 +85,7 @@ class LoginActivity : AppCompatActivity() {
             if(TextUtils.isEmpty(loginID.text.toString()) || !android.util.Patterns.EMAIL_ADDRESS.matcher(loginID.text.toString() as CharSequence).matches() || TextUtils.isEmpty(loginPW.text.toString())) {
                 showFailToLoginDialog(-1)
             } else {
-                (application as GlobalApplication).getInstance().progressSet("로그인 중입니다.")
                 signInWithEmail(loginID.text.toString(), loginPW.text.toString())
-                (application as GlobalApplication).getInstance().progressOFF()
             }
         }
 
@@ -145,6 +143,17 @@ class LoginActivity : AppCompatActivity() {
         val dialogBuilder = AlertDialog.Builder(this)
             .setTitle("로그인 실패")
             .setMessage("로그인에 실패했습니다.($errorCode)")
+            .setPositiveButton("뒤로 가기", DialogInterface.OnClickListener(){
+                    _: DialogInterface, _: Int ->
+            })
+        val dialog = dialogBuilder.create()
+        dialog.show()
+    }
+
+    private fun showFailToLoginDialog(errorMessage: String){
+        val dialogBuilder = AlertDialog.Builder(this)
+            .setTitle("로그인 실패")
+            .setMessage(errorMessage)
             .setPositiveButton("뒤로 가기", DialogInterface.OnClickListener(){
                     _: DialogInterface, _: Int ->
             })
@@ -270,10 +279,11 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun signInWithEmail(email : String, password : String): Boolean {
+        progressOn("Loading...")
         var loginFailed = true
-        var errorCode = -1
         val prefManager = this@LoginActivity.getPreferences(0)
-        val signupRequest = CoroutineScope(Main).launch {
+        var errorMessage = ""
+        launch {
             val url = URL(BuildConfig.server_url + "/user/login")
             val conn = url.openConnection() as HttpURLConnection
             try {
@@ -297,7 +307,6 @@ class LoginActivity : AppCompatActivity() {
                 }
 
                 when(conn.responseCode){
-                    401 -> errorCode = 401
                     200 -> {
                         val inputStream = conn.inputStream
                         if(inputStream != null){
@@ -311,19 +320,27 @@ class LoginActivity : AppCompatActivity() {
                             }
                         }
                     }
+                    else -> errorMessage = conn.responseCode.toString()
                 }
             }
+            catch (e : SocketTimeoutException){
+                errorMessage = "연결 시간 초과 오류"
+            }
             catch (e : Exception){
-                Log.e("Sign in error", e.message!!)
+                Log.e("Sign in error", e.javaClass.kotlin.toString())
             }
             finally {
                 conn.disconnect()
             }
+            withContext(Main){
+                progressOFF()
+                if (errorMessage.isDigitsOnly()){
+                    showFailToLoginDialog(errorMessage.toInt())
+                } else if(errorMessage.isNotEmpty()){
+                    showFailToLoginDialog(errorMessage)
+                }
+            }
         }
-        runBlocking {
-            signupRequest.join()
-        }
-
         return loginFailed
     }
 }
