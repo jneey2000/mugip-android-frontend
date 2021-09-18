@@ -289,7 +289,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
         }
     }
 
-    private fun signInWithEmail(email : String, password : String): Boolean {
+    private fun signInWithEmail(email : String, password : String){
         progressOn("Loading...")
         var loginFailed = true
         val prefManager = this@LoginActivity.getPreferences(0)
@@ -351,9 +351,10 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                     } else{
                         showFailToLoginDialog(errorMessage)
                     }
+                } else if(!loginFailed){
+                    moveToMainActivity()
                 }
             }
         }
-        return loginFailed
     }
 }
