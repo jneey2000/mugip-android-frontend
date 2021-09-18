@@ -204,8 +204,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
             try {
                 // Google Sign In was successful, authenticate with Firebase
                 val account = task.getResult(ApiException::class.java)!!
-                Log.d(TAG, "Token from Google:" + account.idToken)
-                Log.d(TAG, "Email from Google:" + account.email)
+                progressOn("Google 로그인 중..")
                 signInWithOauth(account.idToken!!, account.email!!, "google")
             } catch (e: ApiException) {
                 // Google Sign In failed, update UI appropriately
@@ -217,7 +216,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
     private fun signInWithOauth(token: String, email: String, provider: String) {
         var loginFailed = true
         var errorCode = -1
-        val signupRequest = GlobalScope.launch {
+        launch {
             val url = URL(BuildConfig.server_url + "/user/login/oauth")
             val conn = url.openConnection() as HttpURLConnection
             val prefManager = this@LoginActivity.getPreferences(0)
@@ -264,16 +263,17 @@ class LoginActivity : BaseActivity(), CoroutineScope {
             finally {
                 conn.disconnect()
             }
-        }
-        runBlocking {
-            signupRequest.join()
-            if(loginFailed){
-                when(errorCode){
-                    401 -> showFailToLoginDialog(errorCode)
-                    409 -> showFailToOauthLoginDialog(email, token, provider)
+
+            withContext(Main){
+                progressOFF()
+                if(loginFailed){
+                    when(errorCode){
+                        401 -> showFailToLoginDialog(errorCode)
+                        409 -> showFailToOauthLoginDialog(email, token, provider)
+                    }
+                } else{
+                    moveToMainActivity()
                 }
-            } else{
-                moveToMainActivity()
             }
         }
     }
