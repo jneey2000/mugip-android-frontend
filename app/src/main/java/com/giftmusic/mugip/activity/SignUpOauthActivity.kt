@@ -17,25 +17,27 @@ import androidx.core.widget.addTextChangedListener
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
 import com.google.gson.Gson
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.net.HttpURLConnection
 import java.net.URL
 import android.view.MotionEvent
+import com.giftmusic.mugip.BaseActivity
+import kotlinx.coroutines.*
+import java.net.SocketTimeoutException
+import kotlin.coroutines.CoroutineContext
 
 
-
-
-class SignUpOauthActivity() : AppCompatActivity() {
+class SignUpOauthActivity : BaseActivity(), CoroutineScope {
+    private lateinit var job: Job
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + job
     private var duplicatedNickname = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up_oauth)
-
+        job = Job()
         val bundle = intent.extras
         val email = bundle!!.getString("email", "")
         val token = bundle.getString("token", "")
@@ -51,23 +53,7 @@ class SignUpOauthActivity() : AppCompatActivity() {
             if(!hasFocus){
                 val nickname = nicknameInput.text.toString()
                 Log.d("Current Nickname", nickname)
-                when {
-                    checkDuplicateNickname(nickname) -> {
-                        duplicateNicknameString.text = "중복된 닉네임입니다."
-                        duplicateNicknameString.setTextColor(Color.RED)
-                        duplicateNicknameString.visibility = View.VISIBLE
-                        duplicatedNickname = true
-                    }
-                    nicknameInput.text.isNotEmpty() -> {
-                        duplicateNicknameString.text = "사용가능한 닉네임입니다."
-                        duplicateNicknameString.setTextColor(resources.getColor(R.color.primary, null))
-                        duplicateNicknameString.visibility = View.VISIBLE
-                        duplicatedNickname = false
-                    }
-                    else -> {
-                        duplicateNicknameString.visibility = View.INVISIBLE
-                    }
-                }
+                checkDuplicateNickname(nickname)
             }
         }
 
@@ -84,19 +70,20 @@ class SignUpOauthActivity() : AppCompatActivity() {
         }
     }
 
-    private fun checkDuplicateNickname(nickname : String) : Boolean {
+    // 닉네임 중복 체크
+    private fun checkDuplicateNickname(nickName : String){
         var isDuplicated = false
-        var errorCode = -1
-        val signupRequest = GlobalScope.launch {
-            val url = URL(BuildConfig.server_url + "/user/check/nickname?nickname=" + nickname)
+        var connected = true
+        launch {
+            val url = URL(BuildConfig.server_url + "/user/check/nickname?nickname=" + nickName)
             val conn = url.openConnection() as HttpURLConnection
-            val prefManager = this@SignUpOauthActivity.getPreferences(0)
-
             try {
                 conn.requestMethod = "GET"
                 conn.setRequestProperty("Content-Type", "application/json; utf-8")
                 conn.setRequestProperty("Accept", "application/json")
                 conn.doInput = true
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
 
                 when(conn.responseCode){
                     200 -> {
@@ -104,24 +91,48 @@ class SignUpOauthActivity() : AppCompatActivity() {
                         if(inputStream != null){
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                             val responseJson = JSONObject(returnBody.trim())
-                            Log.d("receive data", responseJson.toString())
-                            isDuplicated = responseJson.has("exists") && responseJson.get("exists") == "true"
+                            if(responseJson.has("exists") && responseJson.getBoolean("exists")){
+                                isDuplicated = true
+                            }
                         }
                     }
-                    else -> errorCode = conn.responseCode
+
+
                 }
             }
+            catch (e : SocketTimeoutException){
+                connected = false
+            }
             catch (e : Exception){
-                Log.e("Sign in error", e.message!!)
+                Log.e("Check duplicate nickname error", e.message!!)
             }
             finally {
                 conn.disconnect()
             }
+
+            withContext(Dispatchers.Main){
+                val nicknameDuplicateString = findViewById<TextView>(R.id.duplicate_nickname_string)
+                progressOFF()
+                if (!connected){
+                    val dialogBuilder = AlertDialog.Builder(this@SignUpOauthActivity)
+                        .setTitle("중복 닉네임 검증 실패")
+                        .setMessage("서버 연결에 실패하여 닉네임 검증에 실패하였습니다.")
+                        .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int -> }
+                    val dialog = dialogBuilder.create()
+                    dialog.show()
+                    nicknameDuplicateString.text = "닉네임 검증에 실패했습니다."
+                    nicknameDuplicateString.setTextColor(Color.RED)
+
+                } else if(isDuplicated){
+                    nicknameDuplicateString.text = "이미 등록된 닉네임입니다."
+                    nicknameDuplicateString.setTextColor(Color.RED)
+                } else if(!isDuplicated){
+                    nicknameDuplicateString.text = "사용 가능한 닉네임입니다."
+                    nicknameDuplicateString.setTextColor(resources.getColor(R.color.primary))
+                }
+                nicknameDuplicateString.visibility = View.VISIBLE
+            }
         }
-        runBlocking {
-            signupRequest.join()
-        }
-        return isDuplicated
     }
 
     private fun decideNickname(email: String, token: String, provider: String, nickname: String){
