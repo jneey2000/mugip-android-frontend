@@ -81,6 +81,17 @@ class LoginActivity : BaseActivity(), CoroutineScope {
         val loginButton = findViewById<Button>(R.id.btn_login_email)
         val loginID = findViewById<EditText>(R.id.email_login_id)
         val loginPW = findViewById<EditText>(R.id.email_login_password)
+        loginID.setOnFocusChangeListener { _, hasFocus ->
+            if(!hasFocus){
+                loginID.setText(loginID.text.toString().trim())
+            }
+        }
+        loginPW.setOnFocusChangeListener { _, hasFocus ->
+            if(!hasFocus){
+                loginPW.setText(loginPW.text.toString().trim())
+            }
+        }
+
         loginButton.setOnClickListener{
             if(TextUtils.isEmpty(loginID.text.toString()) || !android.util.Patterns.EMAIL_ADDRESS.matcher(loginID.text.toString() as CharSequence).matches() || TextUtils.isEmpty(loginPW.text.toString())) {
                 showFailToLoginDialog(-1)
@@ -334,10 +345,12 @@ class LoginActivity : BaseActivity(), CoroutineScope {
             }
             withContext(Main){
                 progressOFF()
-                if (errorMessage.isDigitsOnly()){
-                    showFailToLoginDialog(errorMessage.toInt())
-                } else if(errorMessage.isNotEmpty()){
-                    showFailToLoginDialog(errorMessage)
+                if(errorMessage.isNotEmpty()){
+                    if (errorMessage.isDigitsOnly()){
+                        showFailToLoginDialog(errorMessage.toInt())
+                    } else{
+                        showFailToLoginDialog(errorMessage)
+                    }
                 }
             }
         }
