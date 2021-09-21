@@ -20,5 +20,10 @@
             android:id="@+id/setting_button"
             android:title="설정"
         />
+
+        <item
+            android:id="@+id/logout_button"
+            android:title="로그아웃"
+            />
     </group>
 </menu>
