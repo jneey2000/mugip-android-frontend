@@ -66,7 +66,6 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
             )
         )
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity as Activity)
-        fetchLocation()
 
         val layout = inflater.inflate(R.layout.fragment_main, container, false)
         mapView = layout.findViewById(R.id.map) as MapView
@@ -115,6 +114,7 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
         addMarker()
         map.setOnMarkerClickListener(this)
+        fetchLocation()
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {

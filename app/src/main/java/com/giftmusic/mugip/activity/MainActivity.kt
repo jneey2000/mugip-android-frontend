@@ -16,6 +16,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
 import com.giftmusic.mugip.BaseActivity
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
@@ -30,7 +31,6 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.log
 
 
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener, CoroutineScope {
@@ -168,6 +168,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private fun moveToLoginActivity(){
         Log.d("Back", "Back to Login!")
         val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
         startActivity(intent)
         finish()
     }
