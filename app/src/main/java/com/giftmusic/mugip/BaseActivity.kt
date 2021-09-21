@@ -14,4 +14,11 @@ open class BaseActivity : AppCompatActivity() {
     fun progressOFF(){
         BaseApplication.getInstance().progressOFF()
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if(BaseApplication.getInstance().progressDialog != null && BaseApplication.getInstance().progressDialog!!.isShowing){
+            BaseApplication.getInstance().progressDialog!!.dismiss()
+        }
+    }
 }

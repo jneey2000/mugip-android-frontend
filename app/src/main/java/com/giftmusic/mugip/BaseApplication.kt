@@ -13,7 +13,7 @@ import android.widget.TextView
 
 
 class BaseApplication : Application() {
-    private var progressDialog : AppCompatDialog? = null
+    var progressDialog : AppCompatDialog? = null
     companion object{
         lateinit var baseApplication : BaseApplication
         fun getInstance() : BaseApplication{
