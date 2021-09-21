@@ -251,10 +251,11 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                             val responseJson = JSONObject(returnBody.trim())
                             Log.d("receive data", responseJson.toString())
-                            if(responseJson.has("access_token")){
+                            if(responseJson.has("access_token") && responseJson.has("refresh_token")){
                                 loginFailed = false
                                 val editor = prefManager.edit()
                                 editor.putString("access_token", responseJson["access_token"].toString()).apply()
+                                editor.putString("refresh_token", responseJson["refresh_token"].toString()).apply()
                             }
                         }
                     }
@@ -317,10 +318,11 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                             val responseJson = JSONObject(returnBody.trim())
                             Log.d("receive data", responseJson.toString())
-                            if(responseJson.has("access_token")){
+                            if(responseJson.has("access_token") && responseJson.has("refresh_token")){
                                 loginFailed = false
                                 val editor = prefManager.edit()
                                 editor.putString("access_token", responseJson["access_token"].toString()).apply()
+                                editor.putString("refresh_token", responseJson["refresh_token"].toString()).apply()
                             }
                         }
                     }
