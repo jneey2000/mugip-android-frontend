@@ -14,6 +14,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.HorizontalScrollView
 import android.widget.ImageView
@@ -114,6 +115,9 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
         addMarker()
         map.setOnMarkerClickListener(this)
+        map.setOnMapClickListener {
+            (requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(requireActivity().window.decorView.applicationWindowToken, 0)
+        }
         fetchLocation()
     }
 
