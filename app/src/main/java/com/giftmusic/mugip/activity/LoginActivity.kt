@@ -1,7 +1,9 @@
 package com.giftmusic.mugip.activity
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
@@ -221,10 +223,11 @@ class LoginActivity : BaseActivity(), CoroutineScope {
     private fun signInWithOauth(uid: String, email: String, provider: String) {
         var loginFailed = true
         var errorCode = -1
+        val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
+        val editor = prefManager.edit()
         launch {
             val url = URL(BuildConfig.server_url + "/user/login/oauth")
             val conn = url.openConnection() as HttpURLConnection
-            val prefManager = this@LoginActivity.getPreferences(0)
             try {
                 conn.requestMethod = "POST"
                 conn.setRequestProperty("Content-Type", "application/json; utf-8")
@@ -253,7 +256,6 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                             Log.d("receive data", responseJson.toString())
                             if(responseJson.has("access_token") && responseJson.has("refresh_token")){
                                 loginFailed = false
-                                val editor = prefManager.edit()
                                 editor.putString("access_token", responseJson["access_token"].toString()).apply()
                                 editor.putString("refresh_token", responseJson["refresh_token"].toString()).apply()
                             }
@@ -286,7 +288,8 @@ class LoginActivity : BaseActivity(), CoroutineScope {
     private fun signInWithEmail(email : String, password : String){
         progressOn("Loading...")
         var loginFailed = true
-        val prefManager = this@LoginActivity.getPreferences(0)
+        val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
+        val editor = prefManager.edit()
         var errorMessage = ""
         launch {
             val url = URL(BuildConfig.server_url + "/user/login")
@@ -320,7 +323,6 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                             Log.d("receive data", responseJson.toString())
                             if(responseJson.has("access_token") && responseJson.has("refresh_token")){
                                 loginFailed = false
-                                val editor = prefManager.edit()
                                 editor.putString("access_token", responseJson["access_token"].toString()).apply()
                                 editor.putString("refresh_token", responseJson["refresh_token"].toString()).apply()
                             }
