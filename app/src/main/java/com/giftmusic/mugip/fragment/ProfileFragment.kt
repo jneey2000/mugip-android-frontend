@@ -10,9 +10,11 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.commit
 import androidx.viewpager2.widget.ViewPager2
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.activity.AlarmActivity
+import com.giftmusic.mugip.activity.UploadActivity
 import com.giftmusic.mugip.adapter.OtherUserFragmentStateAdapter
 import com.giftmusic.mugip.models.User
 import com.google.android.material.tabs.TabLayout
@@ -46,7 +48,8 @@ class ProfileFragment(val user: User) : Fragment() {
 
         val uploadButton = layout.findViewById<Button>(R.id.upload_button)
         uploadButton.setOnClickListener {
-            requireActivity().supportFragmentManager.beginTransaction().replace(R.id.content_main, UploadFragment()).addToBackStack(null).commit()
+            val intent = Intent(this.activity, UploadActivity::class.java)
+            startActivity(intent)
         }
 
         viewPager2 = layout.findViewById(R.id.my_profile_tab_pager)

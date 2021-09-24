@@ -25,6 +25,10 @@
             android:name=".activity.AlarmActivity"
             android:exported="true"
             android:theme="@style/Theme.MugipApp" />
+        <activity
+            android:name=".activity.UploadActivity"
+            android:exported="true"
+            android:theme="@style/Theme.MugipApp" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
