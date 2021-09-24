@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.ScrollView
 import android.widget.TextView
@@ -18,7 +19,6 @@ class UploadActivity : BaseActivity() {
         val addTagScrollView = findViewById<ScrollView>(R.id.tag_scroll_view)
         val backButton = findViewById<ImageView>(R.id.back_to_profile)
         val alarmButton = findViewById<ImageView>(R.id.notification_button_profile)
-
         addTagButton.setOnClickListener {
             when(addTagScrollView.visibility){
                 View.VISIBLE -> addTagScrollView.visibility = View.GONE
@@ -26,12 +26,26 @@ class UploadActivity : BaseActivity() {
                 else -> {}
             }
         }
-
         backButton.setOnClickListener { finish() }
         alarmButton.setOnClickListener {
             val intent = Intent(this, AlarmActivity::class.java)
             startActivity(intent)
         }
-
+        
+        val selectCategoryButton = arrayListOf<Button>(
+            findViewById(R.id.select_category_exercise),
+            findViewById(R.id.select_category_work),
+            findViewById(R.id.select_category_reading),
+            findViewById(R.id.select_category_drive),
+            findViewById(R.id.select_category_trip),
+            findViewById(R.id.select_category_programming),
+            findViewById(R.id.select_category_shower)
+        )
+        selectCategoryButton.map {
+            button -> button.setOnClickListener {
+                addTagButton.text = button.text
+                addTagButton.tag = button.id
+            }
+        }
     }
 }
