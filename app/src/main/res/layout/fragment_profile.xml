@@ -94,10 +94,13 @@
                     android:layout_marginHorizontal="10dp"
                     android:orientation="horizontal">
                     <ImageView
-                        android:src="@drawable/user_1"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1" />
+                        android:id="@+id/profile_image_view"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:background="@drawable/profile_background"
+                        android:padding="10dp"
+                        android:layout_margin="10dp"
+                        android:src="@drawable/ic_profile" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
@@ -110,7 +113,7 @@
                             android:id="@+id/profile_id"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="yebin_stupid"
+                            android:text="사용자 ID"
                             android:textStyle="bold"
                             android:textColor="@color/primary"
                             />
@@ -118,7 +121,7 @@
                             android:id="@+id/profile_nickname"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="바계빈"
+                            android:text="사용자 닉네임"
                             android:textStyle="bold"
                             android:textColor="@color/primary"
                             />

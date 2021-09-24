@@ -59,10 +59,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         val openMapActivityButton = findViewById<ImageView>(R.id.center_button)
         openProfileActivityButton.setOnClickListener {
             supportFragmentManager.commit {
-                if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment){
-                    add(R.id.content_main, ProfileFragment())
-                } else{
-                    replace(R.id.content_main, ProfileFragment())
+                if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment && user != null){
+                    add(R.id.content_main, ProfileFragment(user!!))
+                } else if(user != null){
+                    replace(R.id.content_main, ProfileFragment(user!!))
                 }
             }
         }

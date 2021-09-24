@@ -8,15 +8,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.activity.AlarmActivity
 import com.giftmusic.mugip.adapter.OtherUserFragmentStateAdapter
+import com.giftmusic.mugip.models.User
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import org.w3c.dom.Text
 
-class ProfileFragment : Fragment() {
+class ProfileFragment(val user: User) : Fragment() {
     lateinit var viewPager2 : ViewPager2
     lateinit var tabLayout: TabLayout
     private val tabTextList = arrayListOf("History", "Others")
@@ -52,6 +55,17 @@ class ProfileFragment : Fragment() {
         TabLayoutMediator(tabLayout, viewPager2){
                 tab, position -> tab.text = tabTextList[position]
         }.attach()
+
+        val userIDTextView = layout.findViewById<TextView>(R.id.profile_id)
+        val userNickNameTextView = layout.findViewById<TextView>(R.id.profile_nickname)
+        val userProfileImageView = layout.findViewById<ImageView>(R.id.profile_image_view)
+
+        userIDTextView.text = user.userName
+        userNickNameTextView.text = user.nickname
+        if(user.profileImage != null){
+            userProfileImageView.setImageBitmap(user.profileImage!!)
+        }
+
         return layout
     }
 }
