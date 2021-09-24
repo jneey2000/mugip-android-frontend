@@ -61,7 +61,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             supportFragmentManager.commit {
                 if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment && user != null){
                     add(R.id.content_main, ProfileFragment(user!!))
-                } else if(user != null){
+                } else if(supportFragmentManager.findFragmentById(R.id.content_main)!! !is ProfileFragment && user != null){
                     replace(R.id.content_main, ProfileFragment(user!!))
                 }
             }
