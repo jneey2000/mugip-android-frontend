@@ -60,12 +60,6 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
         savedInstanceState: Bundle?
     ): View {
         super.onCreateView(inflater, container, savedInstanceState)
-        otherUsers.add(
-            OtherUserOnMap(
-                "https://raw.githubusercontent.com/Gift-Music/mugip-android-frontend/MVP/Jeongin/test_assets/user_1.png?token=ACQXZAY2XLEHCBD5Z7CXWDDA6DPJ2",
-                LatLng(37.299914556000154, 126.8410831016941)
-            )
-        )
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity as Activity)
 
         val layout = inflater.inflate(R.layout.fragment_main, container, false)
