@@ -12,7 +12,9 @@
         android:layout_width="0dp"
         android:layout_weight="2"
         android:layout_height="wrap_content"
-        android:src="@drawable/user_1" />
+        android:background="@drawable/profile_background"
+        android:padding="10dp"
+        android:src="@drawable/ic_profile" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -21,9 +23,10 @@
         android:layout_marginStart="30dp"
         android:orientation="vertical">
         <TextView
+            android:id="@+id/nav_bar_user_name"
             android:layout_width="match_parent"
             android:layout_height="35dp"
-            android:text="방개비"
+            android:text="사용자 이름"
             android:textColor="#9576FC"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1"
             android:gravity="center_vertical"

@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.text.isDigitsOnly
@@ -36,6 +37,7 @@ import kotlin.coroutines.CoroutineContext
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener, CoroutineScope {
     private lateinit var currentFragment : Fragment
     private lateinit var job: Job
+    private lateinit var userNameTextView : TextView
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
 
@@ -68,6 +70,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 supportFragmentManager.popBackStack()
             }
         }
+
+        // 사용자 정보 로딩
+        userNameTextView = navigationView.getHeaderView(0).findViewById(R.id.nav_bar_user_name)
+        getMyInformation()
     }
 
     override fun onBackPressed() {
@@ -91,6 +97,61 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
         return true
     }
+
+    private fun getMyInformation(){
+        progressOn("사용자 정보 불러오는 중...")
+        var loadingFailed = true
+        val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
+        var userName = ""
+        var errorMessage = ""
+        launch {
+            val url = URL(BuildConfig.server_url + "/user/")
+            val conn = url.openConnection() as HttpURLConnection
+            try {
+                conn.requestMethod = "GET"
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.setRequestProperty("Accept", "application/json")
+                conn.setRequestProperty("Authorization", "Basic ${prefManager.getString("access_token", "")}")
+                conn.doInput = true
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+
+                when(conn.responseCode){
+                    200 -> {
+                        val inputStream = conn.inputStream
+                        if(inputStream != null){
+                            val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                            val responseJson = JSONObject(returnBody.trim())
+                            if(responseJson.has("user_nickname")){
+                                loadingFailed = false
+                                userName = responseJson.getString("user_nickname")
+                            }
+                        }
+                    }
+                    else -> errorMessage = conn.responseCode.toString()
+                }
+            }
+            catch (e : SocketTimeoutException){
+                errorMessage = "연결 시간 초과 오류"
+            }
+            catch (e : Exception){
+                Log.e("fetch user information error", e.toString())
+                Log.e("fetch user information error", e.javaClass.kotlin.toString())
+            }
+            finally {
+                conn.disconnect()
+            }
+            withContext(Dispatchers.Main){
+                progressOFF()
+                if(!loadingFailed){
+                    userNameTextView.text = userName
+                } else if(errorMessage.isNotEmpty()){
+                    showFailDialog("사용자 정보 로딩 실패", errorMessage)
+                }
+            }
+        }
+    }
+
 
     private fun logoutButtonClicked(){
         progressOn("로그아웃 중...")
@@ -149,15 +210,15 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                     moveToLoginActivity()
 
                 } else if(errorMessage.isNotEmpty()){
-                    showFailToLogoutDialog(errorMessage)
+                    showFailDialog("회원가입 실패", errorMessage)
                 }
             }
         }
     }
 
-    private fun showFailToLogoutDialog(errorMessage: String){
+    private fun showFailDialog(title: String, errorMessage: String){
         val dialogBuilder = AlertDialog.Builder(this)
-            .setTitle("로그아웃 실패")
+            .setTitle(title)
             .setMessage(errorMessage)
             .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
             }
