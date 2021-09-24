@@ -4,20 +4,17 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.text.isDigitsOnly
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.commit
 import com.giftmusic.mugip.BaseActivity
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
@@ -35,9 +32,9 @@ import kotlin.coroutines.CoroutineContext
 
 
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener, CoroutineScope {
-    private lateinit var currentFragment : Fragment
     private lateinit var job: Job
     private lateinit var userNameTextView : TextView
+    private lateinit var userProfileImageView: ImageView
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
 
@@ -48,31 +45,39 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         val navigationView = findViewById<View>(R.id.nav_view) as NavigationView
         navigationView.setNavigationItemSelectedListener(this)
 
-        currentFragment = MainFragment()
-        supportFragmentManager.beginTransaction().replace(R.id.content_main, currentFragment).commit()
+        supportFragmentManager.commit {
+            add(R.id.content_main, MainFragment())
+        }
 
         // 하단 메뉴 버튼
         val openProfileActivityButton = findViewById<ImageView>(R.id.ic_profile)
         val openPlayListActivityButton = findViewById<ImageView>(R.id.ic_playlist)
         val openMapActivityButton = findViewById<ImageView>(R.id.center_button)
         openProfileActivityButton.setOnClickListener {
-            if (currentFragment !is ProfileFragment){
-                supportFragmentManager.beginTransaction().replace(R.id.content_main, ProfileFragment()).addToBackStack(null).commit()
+            supportFragmentManager.commit {
+                if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment){
+                    add(R.id.content_main, ProfileFragment())
+                } else{
+                    replace(R.id.content_main, ProfileFragment())
+                }
             }
         }
         openPlayListActivityButton.setOnClickListener {
 
         }
         openMapActivityButton.setOnClickListener {
-            if(currentFragment is MainFragment){
-                (currentFragment as MainFragment).fetchLocation()
-            } else {
-                supportFragmentManager.popBackStack()
+            supportFragmentManager.commit {
+                if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment){
+                    (supportFragmentManager.findFragmentById(R.id.content_main)!! as MainFragment).fetchLocation()
+                } else{
+                    remove(supportFragmentManager.findFragmentById(R.id.content_main)!!)
+                }
             }
         }
 
         // 사용자 정보 로딩
         userNameTextView = navigationView.getHeaderView(0).findViewById(R.id.nav_bar_user_name)
+        userProfileImageView = navigationView.getHeaderView(0).findViewById(R.id.nav_bar_profile_image)
         getMyInformation()
     }
 
@@ -81,10 +86,12 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)
         } else {
-            if(currentFragment is MainFragment){
+            if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment){
                 super.onBackPressed()
             } else {
-                supportFragmentManager.beginTransaction().replace(R.id.content_main, ProfileFragment()).commit()
+                supportFragmentManager.commit {
+                    remove(supportFragmentManager.findFragmentById(R.id.content_main)!!)
+                }
             }
         }
     }
@@ -104,6 +111,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
         var userName = ""
         var errorMessage = ""
+        var profileImage : Bitmap? = null
+
         launch {
             val url = URL(BuildConfig.server_url + "/user/")
             val conn = url.openConnection() as HttpURLConnection
@@ -125,6 +134,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                             if(responseJson.has("user_nickname")){
                                 loadingFailed = false
                                 userName = responseJson.getString("user_nickname")
+                                if(responseJson.has("profile_image")){
+                                    val imageURL = URL(responseJson.getString("profile_image"))
+                                    profileImage = BitmapFactory.decodeStream(imageURL.openConnection().getInputStream())
+                                }
                             }
                         }
                     }
@@ -145,6 +158,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 progressOFF()
                 if(!loadingFailed){
                     userNameTextView.text = userName
+                    if(profileImage != null){
+                        userProfileImageView.setImageBitmap(profileImage!!)
+                    }
                 } else if(errorMessage.isNotEmpty()){
                     showFailDialog("사용자 정보 로딩 실패", errorMessage)
                 }
