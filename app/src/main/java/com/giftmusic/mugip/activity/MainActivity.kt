@@ -20,6 +20,7 @@ import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.fragment.MainFragment
 import com.giftmusic.mugip.fragment.ProfileFragment
+import com.giftmusic.mugip.models.User
 import com.google.android.material.navigation.NavigationView
 import com.google.gson.Gson
 import kotlinx.coroutines.*
@@ -35,6 +36,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private lateinit var job: Job
     private lateinit var userNameTextView : TextView
     private lateinit var userProfileImageView: ImageView
+    private var user : User? = null
+
+
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
 
@@ -109,9 +113,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         progressOn("사용자 정보 불러오는 중...")
         var loadingFailed = true
         val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
-        var userName = ""
         var errorMessage = ""
-        var profileImage : Bitmap? = null
 
         launch {
             val url = URL(BuildConfig.server_url + "/user/")
@@ -131,12 +133,19 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         if(inputStream != null){
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                             val responseJson = JSONObject(returnBody.trim())
-                            if(responseJson.has("user_nickname")){
+                            if(responseJson.has("user_id") && responseJson.has("user_name") &&
+                                responseJson.has("email") && responseJson.has("user_nickname")){
+                                user = User(
+                                    responseJson.getString("user_id"),
+                                    responseJson.getString("user_nickname"),
+                                    responseJson.getString("user_name"),
+                                    responseJson.getString("email"),
+                                    null
+                                )
                                 loadingFailed = false
-                                userName = responseJson.getString("user_nickname")
                                 if(responseJson.has("profile_image")){
                                     val imageURL = URL(responseJson.getString("profile_image"))
-                                    profileImage = BitmapFactory.decodeStream(imageURL.openConnection().getInputStream())
+                                    user!!.profileImage = BitmapFactory.decodeStream(imageURL.openConnection().getInputStream())
                                 }
                             }
                         }
@@ -156,10 +165,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
             withContext(Dispatchers.Main){
                 progressOFF()
-                if(!loadingFailed){
-                    userNameTextView.text = userName
-                    if(profileImage != null){
-                        userProfileImageView.setImageBitmap(profileImage!!)
+                if(!loadingFailed && user != null){
+                    userNameTextView.text = user!!.nickname
+                    if(user!!.profileImage != null){
+                        userProfileImageView.setImageBitmap(user!!.profileImage)
                     }
                 } else if(errorMessage.isNotEmpty()){
                     showFailDialog("사용자 정보 로딩 실패", errorMessage)
