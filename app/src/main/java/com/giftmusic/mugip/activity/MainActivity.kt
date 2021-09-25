@@ -22,6 +22,8 @@ import com.giftmusic.mugip.fragment.MainFragment
 import com.giftmusic.mugip.fragment.ProfileFragment
 import com.giftmusic.mugip.models.User
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
 import com.google.gson.Gson
 import kotlinx.coroutines.*
 import org.json.JSONObject
@@ -146,6 +148,11 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                                 if(responseJson.has("profile_image")){
                                     val imageURL = URL(responseJson.getString("profile_image"))
                                     user!!.profileImage = BitmapFactory.decodeStream(imageURL.openConnection().getInputStream())
+                                }
+
+                                // 사용자에 대한 알림을 받을 수 있도록 FCM 구독
+                                Firebase.messaging.subscribeToTopic(user!!.userID).addOnCompleteListener {
+                                    Log.d("FCM topic", user!!.userID)
                                 }
                             }
                         }
