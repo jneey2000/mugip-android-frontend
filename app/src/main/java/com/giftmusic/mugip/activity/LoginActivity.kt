@@ -16,6 +16,7 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.text.isDigitsOnly
+import com.auth0.android.jwt.JWT
 import com.giftmusic.mugip.BaseActivity
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
@@ -47,13 +48,12 @@ class LoginActivity : BaseActivity(), CoroutineScope {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         job = Job()
-        // 자동 앱 로그인(카카오)
-        if(AuthApiClient.instance.hasToken()){
-            UserApiClient.instance.accessTokenInfo{_, error ->
-                if(error == null){
-                    moveToMainActivity()
-                }
-            }
+        // 자동 로그인 확인
+        val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
+        val accessToken = prefManager.getString("access_token", null)
+        val refreshToken = prefManager.getString("refresh_token", null)
+        if(accessToken != null && refreshToken != null){
+            signInWithToken(accessToken, refreshToken)
         }
 
         // 구글 로그인
@@ -61,10 +61,6 @@ class LoginActivity : BaseActivity(), CoroutineScope {
             .requestId().requestEmail().build()
 
         // 구글 자동 로그인
-        val gsa = GoogleSignIn.getLastSignedInAccount(this)
-        if(gsa != null){
-//            moveToMainActivity()
-        }
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContentView(R.layout.activity_login)
@@ -217,6 +213,75 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                 // Google Sign In failed, update UI appropriately
                 Log.w(TAG, "Google sign in failed", e)
             }
+        }
+    }
+
+    private fun signInWithToken(accessToken: String, refreshToken: String){
+        val jwtToken = JWT(accessToken)
+        Log.d("Expired at", jwtToken.expiresAt.toString())
+        if(jwtToken.isExpired(100)){
+            var refreshFailed = true
+            var errorCode = -1
+            val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
+            val editor = prefManager.edit()
+            launch {
+                val url = URL(BuildConfig.server_url + "/user/token/refresh")
+                val conn = url.openConnection() as HttpURLConnection
+                try {
+                    conn.requestMethod = "POST"
+                    conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                    conn.setRequestProperty("Accept", "application/json")
+                    conn.doOutput = true
+                    conn.doInput = true
+
+                    val requestJson = HashMap<String, String>()
+                    requestJson["refresh_token"] = refreshToken
+                    requestJson["access_token"] = accessToken
+
+                    conn.outputStream.use { os ->
+                        val input: ByteArray =
+                            Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                        os.write(input, 0, input.size)
+                        os.flush()
+                    }
+
+                    when(conn.responseCode){
+                        200 -> {
+                            val inputStream = conn.inputStream
+                            if(inputStream != null){
+                                val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                                val responseJson = JSONObject(returnBody.trim())
+                                Log.d("receive data", responseJson.toString())
+                                if(responseJson.has("access_token") && responseJson.has("refresh_token")){
+                                    refreshFailed = false
+                                    editor.putString("access_token", responseJson["access_token"].toString()).apply()
+                                    editor.putString("refresh_token", responseJson["refresh_token"].toString()).apply()
+                                }
+                            }
+                        }
+                        else -> errorCode = conn.responseCode
+                    }
+                }
+                catch (e : Exception){
+                    Log.e("refresh token error", e.message!!)
+                }
+                finally {
+                    conn.disconnect()
+                }
+
+                withContext(Main){
+                    progressOFF()
+                    if(refreshFailed){
+                        when(errorCode){
+                            401 -> showFailToLoginDialog(errorCode)
+                        }
+                    } else{
+                        moveToMainActivity()
+                    }
+                }
+            }
+        } else {
+            moveToMainActivity()
         }
     }
 
