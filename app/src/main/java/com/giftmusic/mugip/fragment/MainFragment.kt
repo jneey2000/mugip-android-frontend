@@ -94,7 +94,7 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
             val intent = Intent(activity, AlarmActivity::class.java)
             startActivity(intent)
         }
-
+            
         return layout
     }
 
@@ -113,6 +113,13 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
             (requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(requireActivity().window.decorView.applicationWindowToken, 0)
         }
         fetchLocation()
+        // 지도 위치가 이동했을 때
+        map.setOnCameraIdleListener {
+            val visibleRegion = map.projection.visibleRegion.latLngBounds
+            Log.d("map location(northeast)", "Location: (${visibleRegion.northeast.latitude}, ${visibleRegion.northeast.longitude})")
+            Log.d("map location(southwest)", "Location: (${visibleRegion.southwest.latitude}, ${visibleRegion.southwest.longitude})")
+            // 마커 업데이트 코드 삽입
+        }
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
