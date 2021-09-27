@@ -7,7 +7,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.models.MusicItem
-import com.giftmusic.mugip.models.PlayListItem
 
 class PlaylistListAdapter(item: List<MusicItem>) :
     RecyclerView.Adapter<PlaylistListAdapter.ItemViewHolder>() {
@@ -27,7 +26,7 @@ class PlaylistListAdapter(item: List<MusicItem>) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_other_follow_playlist, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_following_playlist, parent, false)
         return ItemViewHolder(view)
     }
 

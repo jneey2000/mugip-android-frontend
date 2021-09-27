@@ -23,7 +23,7 @@ class InvitationListAdapter(list: List<OtherUserInvite>) :
 
 
         fun bind(item: OtherUserInvite){
-            val defaultImage = ResourcesCompat.getDrawable(itemView.resources, R.drawable.user_1, null) as BitmapDrawable
+            val defaultImage = ResourcesCompat.getDrawable(itemView.resources, R.drawable.ic_profile, null) as BitmapDrawable
 
             userProfileImage.setImageDrawable(defaultImage)
             userProfileID.text = item.userID

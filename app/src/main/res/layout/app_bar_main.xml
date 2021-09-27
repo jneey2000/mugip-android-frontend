@@ -32,7 +32,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/play_list"
+            android:src="@drawable/button_go_to_playlist_not_pressed"
             android:layout_margin="15dp"
             />
 
@@ -41,7 +41,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/center_button"
+            android:src="@drawable/button_go_to_map_selector"
             android:layout_margin="15dp"
             />
 
@@ -50,7 +50,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:src="@drawable/profile"
+            android:src="@drawable/button_go_to_my_profile_not_pressed"
             android:layout_margin="15dp"
             />
     </LinearLayout>

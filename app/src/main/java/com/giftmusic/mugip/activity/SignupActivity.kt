@@ -1,13 +1,8 @@
 package com.giftmusic.mugip.activity
 
 import android.app.AlertDialog
-import android.content.Context
 import android.content.DialogInterface
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
@@ -15,23 +10,16 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.addTextChangedListener
 import com.giftmusic.mugip.BaseActivity
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
 import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.Main
 import org.json.JSONObject
-import org.w3c.dom.Text
 import java.io.*
-import java.lang.StringBuilder
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
@@ -44,7 +32,7 @@ class SignupActivity : BaseActivity(), CoroutineScope {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_signup)
+        setContentView(R.layout.activity_sign_up)
         job = Job()
         val idInput = findViewById<EditText>(R.id.sign_up_id)
         val passwordInput = findViewById<EditText>(R.id.sign_up_password)

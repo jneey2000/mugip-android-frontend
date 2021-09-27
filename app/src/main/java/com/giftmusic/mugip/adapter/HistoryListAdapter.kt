@@ -1,13 +1,10 @@
 package com.giftmusic.mugip.adapter
 
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.models.MusicItem
@@ -37,7 +34,7 @@ class HistoryListAdapter(list: List<MusicItem>) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_history, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_playing_histroy, parent, false)
         return ItemViewHolder(view)
     }
 

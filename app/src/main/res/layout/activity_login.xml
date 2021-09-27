@@ -122,7 +122,7 @@
             android:id="@+id/btn_login_kakao"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:src="@drawable/kakao_login_large_wide"
+            android:src="@drawable/button_kakao_login"
             android:scaleType="fitXY"
             android:background="@android:color/transparent"
             android:gravity="center"
@@ -147,7 +147,7 @@
                 android:id="@+id/google_icon"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/btn_google_signin" />
+                android:src="@drawable/logo_google_sign_in" />
             <TextView
                 android:layout_width="0dp"
                 android:layout_weight="1"

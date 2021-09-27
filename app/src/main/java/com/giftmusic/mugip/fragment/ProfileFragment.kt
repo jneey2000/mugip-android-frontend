@@ -1,7 +1,6 @@
 package com.giftmusic.mugip.fragment
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,7 +9,6 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
 import androidx.viewpager2.widget.ViewPager2
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.activity.AlarmActivity
@@ -19,7 +17,6 @@ import com.giftmusic.mugip.adapter.OtherUserFragmentStateAdapter
 import com.giftmusic.mugip.models.User
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import org.w3c.dom.Text
 
 class ProfileFragment(val user: User) : Fragment() {
     lateinit var viewPager2 : ViewPager2
@@ -32,7 +29,7 @@ class ProfileFragment(val user: User) : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
-        val layout = inflater.inflate(R.layout.fragment_profile, container, false)
+        val layout = inflater.inflate(R.layout.fragment_my_profile, container, false)
 
         val backButton = layout.findViewById<ImageView>(R.id.back_to_map_from_profile)
         backButton.setOnClickListener {

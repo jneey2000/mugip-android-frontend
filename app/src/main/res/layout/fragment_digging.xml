@@ -90,7 +90,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginHorizontal="10dp"
-                android:background="@drawable/button_selector"
+                android:background="@drawable/button_primary_selector"
                 android:text="MY"
                 android:textColor="@color/white" />
 
@@ -101,7 +101,7 @@
                 android:layout_marginHorizontal="10dp"
                 android:text="Author"
                 android:textColor="@color/white"
-                android:background="@drawable/button_selector"
+                android:background="@drawable/button_primary_selector"
             />
 
         </LinearLayout>

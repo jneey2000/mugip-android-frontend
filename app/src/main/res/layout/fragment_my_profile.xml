@@ -128,7 +128,6 @@
                     </LinearLayout>
                     <Button
                         android:id="@+id/modify_button"
-                        android:src="@drawable/user_1"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
@@ -140,7 +139,6 @@
                         />
                     <Button
                         android:id="@+id/upload_button"
-                        android:src="@drawable/user_1"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"

@@ -62,7 +62,7 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
         super.onCreateView(inflater, container, savedInstanceState)
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity as Activity)
 
-        val layout = inflater.inflate(R.layout.fragment_main, container, false)
+        val layout = inflater.inflate(R.layout.fragment_map, container, false)
         mapView = layout.findViewById(R.id.map) as MapView
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
@@ -158,7 +158,7 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
                     bitmap = BitmapFactory.decodeStream(inputStream)
                 } catch (e: FileNotFoundException){
                     val markerImage = ResourcesCompat.getDrawable(resources,
-                        R.drawable.user_1, null) as BitmapDrawable
+                        R.drawable.ic_profile, null) as BitmapDrawable
                     bitmap = Bitmap.createScaledBitmap(markerImage.bitmap, 50, 50, false)
                 }
 

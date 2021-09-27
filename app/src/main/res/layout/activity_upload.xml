@@ -151,7 +151,7 @@
                 android:layout_width="80dp"
                 android:layout_height="match_parent"
                 android:layout_marginStart="10dp"
-                android:background="@drawable/upload_select_tag_button"
+                android:background="@drawable/button_select_category_to_upload"
                 android:text="+"
                 android:gravity="center"
                 android:textColor="@color/primary"
@@ -167,7 +167,7 @@
             android:layout_height="150dp"
             android:layout_marginVertical="15dp"
             android:layout_gravity="center"
-            android:background="@drawable/upload_select_tag_button"
+            android:background="@drawable/button_select_category_to_upload"
             android:scrollbarThumbHorizontal="@color/secondary"
             android:scrollbarTrackHorizontal="@color/primary"
             android:scrollbarSize="5dp"
@@ -265,7 +265,7 @@
             android:text="확인"
             android:textColor="@color/primary"
             android:textAlignment="center"
-            android:background="@drawable/upload_select_tag_button"
+            android:background="@drawable/button_select_category_to_upload"
             android:layout_gravity="center"
         />
     </LinearLayout>

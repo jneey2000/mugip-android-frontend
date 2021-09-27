@@ -25,7 +25,7 @@ class HistoryFragment : Fragment() {
         musicList.add(MusicItem("https://github.com", "아미타이거", "육군", "\uD83D\uDCBB 업무"))
         musicList.add(MusicItem("https://github.com", "전우", "육군", "\uD83D\uDCBB 업무"))
 
-        return inflater.inflate(R.layout.fragment_history_list, container, false)
+        return inflater.inflate(R.layout.fragment_my_playing_history, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

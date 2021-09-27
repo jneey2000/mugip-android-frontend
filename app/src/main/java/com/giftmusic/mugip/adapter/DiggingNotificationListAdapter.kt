@@ -26,7 +26,7 @@ class DiggingNotificationListAdapter(list: List<DiggingNotificationItem>) :
 
         @SuppressLint("SetTextI18n")
         fun bind(item: DiggingNotificationItem){
-            val defaultImage = ResourcesCompat.getDrawable(itemView.resources, R.drawable.user_1, null) as BitmapDrawable
+            val defaultImage = ResourcesCompat.getDrawable(itemView.resources, R.drawable.ic_profile, null) as BitmapDrawable
             userProfileImage.setImageDrawable(defaultImage)
             notificationTextView.text = "${item.otherUser.userID}님이 \"${item.contents}\"를 디깅하였습니다."
             (notificationTextView.text as Spannable).setSpan(ForegroundColorSpan(Color.parseColor("#6B63FF")), 0, item.otherUser.userID.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
