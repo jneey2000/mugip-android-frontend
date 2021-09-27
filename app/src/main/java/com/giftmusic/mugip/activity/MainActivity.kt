@@ -40,6 +40,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private lateinit var userProfileImageView: ImageView
     private var user : User? = null
 
+    private lateinit var openProfileActivityButton : ImageView
+    private lateinit var openPlayListActivityButton : ImageView
+    private lateinit var openMapActivityButton : ImageView
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
@@ -56,31 +59,47 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
 
         // 하단 메뉴 버튼
-        val openProfileActivityButton = findViewById<ImageView>(R.id.ic_profile)
-        val openPlayListActivityButton = findViewById<ImageView>(R.id.ic_playlist)
-        val openMapActivityButton = findViewById<ImageView>(R.id.center_button)
+        openProfileActivityButton = findViewById(R.id.ic_profile)
+        openPlayListActivityButton = findViewById(R.id.ic_playlist)
+        openMapActivityButton = findViewById(R.id.center_button)
         openProfileActivityButton.setOnClickListener {
             supportFragmentManager.commit {
                 if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment && user != null){
+                    openMapActivityButton.isSelected = false
+                    openPlayListActivityButton.isSelected = false
+                    openProfileActivityButton.isSelected = true
                     add(R.id.content_main, ProfileFragment(user!!))
                 } else if(supportFragmentManager.findFragmentById(R.id.content_main)!! !is ProfileFragment && user != null){
+                    openMapActivityButton.isSelected = false
+                    openPlayListActivityButton.isSelected = false
+                    openProfileActivityButton.isSelected = true
                     replace(R.id.content_main, ProfileFragment(user!!))
                 }
             }
         }
         openPlayListActivityButton.setOnClickListener {
-
+            openMapActivityButton.isSelected = false
+            openPlayListActivityButton.isSelected = true
+            openProfileActivityButton.isSelected = false
         }
         openMapActivityButton.setOnClickListener {
             supportFragmentManager.commit {
                 if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment){
                     (supportFragmentManager.findFragmentById(R.id.content_main)!! as MainFragment).fetchLocation()
+                    openMapActivityButton.isSelected = true
+                    openPlayListActivityButton.isSelected = false
+                    openProfileActivityButton.isSelected = false
                 } else{
                     remove(supportFragmentManager.findFragmentById(R.id.content_main)!!)
+                    openMapActivityButton.isSelected = true
+                    openPlayListActivityButton.isSelected = false
+                    openProfileActivityButton.isSelected = false
                 }
             }
         }
-
+        openMapActivityButton.isSelected = true
+        openPlayListActivityButton.isSelected = false
+        openProfileActivityButton.isSelected = false
         // 사용자 정보 로딩
         userNameTextView = navigationView.getHeaderView(0).findViewById(R.id.nav_bar_user_name)
         userProfileImageView = navigationView.getHeaderView(0).findViewById(R.id.nav_bar_profile_image)
@@ -97,6 +116,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             } else {
                 supportFragmentManager.commit {
                     remove(supportFragmentManager.findFragmentById(R.id.content_main)!!)
+                    openMapActivityButton.isSelected = true
+                    openPlayListActivityButton.isSelected = false
+                    openProfileActivityButton.isSelected = false
                 }
             }
         }
