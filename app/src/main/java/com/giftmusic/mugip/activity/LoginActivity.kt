@@ -47,8 +47,10 @@ class LoginActivity : BaseActivity(), CoroutineScope {
         get() = Dispatchers.IO + job
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Coroutine scope 지정을 위한 job 선언
         job = Job()
-        // 자동 로그인 확인
+        
+        // 자동 로그인을 위한 token 로딩 및 로그인 시도
         val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
         val accessToken = prefManager.getString("access_token", null)
         val refreshToken = prefManager.getString("refresh_token", null)
@@ -56,28 +58,29 @@ class LoginActivity : BaseActivity(), CoroutineScope {
             signInWithToken(accessToken, refreshToken)
         }
 
-        // 구글 로그인
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestId().requestEmail().build()
-
-        // 구글 자동 로그인
+        // 레이아웃 및 스플래시 스크린
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContentView(R.layout.activity_login)
 
+        // 구글 로그인 옵션
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestId().requestEmail().build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
         auth = FirebaseAuth.getInstance()
 
-        // 버튼 연결
+        // 버튼 연결(Oauth)
         val kakaoLoginButton : ImageButton = findViewById(R.id.btn_login_kakao)
         val googleLoginButton : LinearLayout = findViewById(R.id.btn_login_google)
-
         kakaoLoginButton.setOnClickListener(LoginButtonListener())
         googleLoginButton.setOnClickListener(LoginButtonListener())
 
+        // 버튼 연결(Email/PW)
         val loginButton = findViewById<Button>(R.id.btn_login_email)
         val loginID = findViewById<EditText>(R.id.email_login_id)
         val loginPW = findViewById<EditText>(R.id.email_login_password)
+ 
+        // 아이디 및 패스워드 입력 화면에서 키보드 자동 완성을 사용했을 때 
         loginID.setOnFocusChangeListener { _, hasFocus ->
             if(!hasFocus){
                 loginID.setText(loginID.text.toString().trim())
@@ -89,14 +92,16 @@ class LoginActivity : BaseActivity(), CoroutineScope {
             }
         }
 
+        // 로그인 버튼 클릭했을 때 -> 이메일 형식에 맞는지 검증
         loginButton.setOnClickListener{
             if(TextUtils.isEmpty(loginID.text.toString()) || !android.util.Patterns.EMAIL_ADDRESS.matcher(loginID.text.toString() as CharSequence).matches() || TextUtils.isEmpty(loginPW.text.toString())) {
-                showFailToLoginDialog(-1)
+                showDialog("이메일 입력 오류", "올바른 이메일 형식이 아닙니다.")
             } else {
                 signInWithEmail(loginID.text.toString(), loginPW.text.toString())
             }
         }
 
+        // 회원가입 창으로 이동
         val signUPButton = findViewById<Button>(R.id.btn_sign_up)
         signUPButton.setOnClickListener {
             val signupActivity = Intent(this, SignupActivity::class.java)
@@ -127,12 +132,12 @@ class LoginActivity : BaseActivity(), CoroutineScope {
     val kakaoCallback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
         if (error != null) {
             Log.e("로그인 실패", error.toString())
-            showFailToLoginDialog(-1)
+            showDialog("카카오 로그인 오류", "카카오 계정 로그인에 실패했습니다.")
         }
         else if (token != null) {
-            UserApiClient.instance.me { user, error ->
-                if (error != null) {
-                    Log.e(TAG, "사용자 정보 요청 실패", error)
+            UserApiClient.instance.me { user, loginError ->
+                if (loginError != null) {
+                    Log.e(TAG, "사용자 정보 요청 실패", loginError)
                 }
                 else if (user != null) {
                     signInWithOauth(user.id.toString(), user.kakaoAccount?.email!!, "kakao")
@@ -142,24 +147,12 @@ class LoginActivity : BaseActivity(), CoroutineScope {
     }
 
     // 로그인 실패할 때
-    private fun showFailToLoginDialog(errorCode: Int){
+    private fun showDialog(dialogTitle: String, dialogMessage: String){
         val dialogBuilder = AlertDialog.Builder(this)
-            .setTitle("로그인 실패")
-            .setMessage("로그인에 실패했습니다.($errorCode)")
-            .setPositiveButton("뒤로 가기", DialogInterface.OnClickListener(){
-                    _: DialogInterface, _: Int ->
-            })
-        val dialog = dialogBuilder.create()
-        dialog.show()
-    }
-
-    private fun showFailToLoginDialog(errorMessage: String){
-        val dialogBuilder = AlertDialog.Builder(this)
-            .setTitle("로그인 실패")
-            .setMessage(errorMessage)
-            .setPositiveButton("뒤로 가기", DialogInterface.OnClickListener(){
-                    _: DialogInterface, _: Int ->
-            })
+            .setTitle(dialogTitle)
+            .setMessage(dialogMessage)
+            .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
+            }
         val dialog = dialogBuilder.create()
         dialog.show()
     }
@@ -186,18 +179,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
         startActivity(intent)
         finish()
     }
-
-    override fun onStart() {
-        super.onStart()
-        val currentUser = auth.currentUser
-        updateUIWithGoogle(currentUser)
-    }
-    private fun updateUIWithGoogle(user: FirebaseUser?){
-        if(user != null){
-//            moveToMainActivity()
-        }
-    }
-
+    
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -273,7 +255,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                     progressOFF()
                     if(refreshFailed){
                         when(errorCode){
-                            401 -> showFailToLoginDialog(errorCode)
+                            401 -> showDialog("인증 오류", "인증 오류 $errorCode")
                         }
                     } else{
                         moveToMainActivity()
@@ -340,7 +322,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                 progressOFF()
                 if(loginFailed){
                     when(errorCode){
-                        401 -> showFailToLoginDialog(errorCode)
+                        401 -> showDialog("인증 오류", "인증 오류 $errorCode")
                         409 -> showFailToOauthLoginDialog(email, uid, provider)
                     }
                 } else{
@@ -408,11 +390,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
             withContext(Main){
                 progressOFF()
                 if(errorMessage.isNotEmpty()){
-                    if (errorMessage.isDigitsOnly()){
-                        showFailToLoginDialog(errorMessage.toInt())
-                    } else{
-                        showFailToLoginDialog(errorMessage)
-                    }
+                    showDialog("인증 오류", "인증 오류 $errorMessage")
                 } else if(!loginFailed){
                     moveToMainActivity()
                 }
