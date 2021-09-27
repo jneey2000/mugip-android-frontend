@@ -96,19 +96,19 @@ class SignupActivity : BaseActivity(), CoroutineScope {
         val signupButton = findViewById<Button>(R.id.btn_sign_up)
         signupButton.setOnClickListener {
             if(emailInput.text.toString().isEmpty()){
-                showDialog("이메일을 입력해주십시오.")
+                showDialog("회원가입 실패", "이메일을 입력해주십시오.")
             } else if(duplicateEmail){
-                showDialog("이미 가입된 이메일입니다.")
+                showDialog("회원가입 실패", "이미 가입된 이메일입니다.")
             } else if(!Patterns.EMAIL_ADDRESS.matcher(emailInput.text.toString()).matches()){
-                showDialog("올바른 이메일 형식이 아닙니다.")
+                showDialog("회원가입 실패", "올바른 이메일 형식이 아닙니다.")
             } else if(idInput.text.toString().isEmpty()){
-                showDialog("아이디를 입력해주십시오.")
+                showDialog("회원가입 실패", "아이디를 입력해주십시오.")
             } else if(nicknameInput.text.toString().isEmpty()) {
-                showDialog("닉네임을 입력해주십시오.")
+                showDialog("회원가입 실패", "닉네임을 입력해주십시오.")
             } else if(passwordInput.text.toString().isEmpty() || passwordConfirmInput.text.toString().isEmpty()){
-                showDialog("비밀번호를 입력해주세요.")
+                showDialog("회원가입 실패", "비밀번호를 입력해주세요.")
             } else if(passwordInput.text.toString() != passwordConfirmInput.text.toString()){
-                showDialog("비밀번호 확인 입력창에 동일한 비밀번호를 입력해주세요.")
+                showDialog("회원가입 실패", "비밀번호 확인 입력창에 동일한 비밀번호를 입력해주세요.")
             } else {
                 var signUpFailed = true
                 var errorCode = -1
@@ -162,7 +162,7 @@ class SignupActivity : BaseActivity(), CoroutineScope {
 
                     withContext(Main){
                         if(signUpFailed){
-                            showFailToLoginDialog(errorCode)
+                            showDialog("회원가입 실패", "회원가입 실패($errorCode)")
                         } else{
                             showSuccessToSignUpDialog()
                         }
@@ -313,31 +313,12 @@ class SignupActivity : BaseActivity(), CoroutineScope {
         val dialog = dialogBuilder.create()
         dialog.show()
     }
-    
-    // 로그인 실패할 때
-    private fun showFailToLoginDialog(errorCode: Int){
-        val dialogBuilder : AlertDialog.Builder = if (errorCode == -1){
-            AlertDialog.Builder(this)
-                .setTitle("회원가입 실패")
-                .setMessage("회원가입에 실패했습니다.($errorCode)")
-                .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
-                }
-        } else {
-            AlertDialog.Builder(this)
-                .setTitle("회원가입 실패")
-                .setMessage("회원가입에 실패했습니다.($errorCode)")
-                .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
-                }
-        }
-        val dialog = dialogBuilder.create()
-        dialog.show()
-    }
 
     // 에러 팝업을 띄울 때
-    private fun showDialog(message: String){
+    private fun showDialog(dialogTitle: String, dialogMessage: String){
         val dialogBuilder = AlertDialog.Builder(this)
-            .setTitle("회원가입 실패")
-            .setMessage(message)
+            .setTitle(dialogTitle)
+            .setMessage(dialogMessage)
             .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
             }
         val dialog = dialogBuilder.create()
