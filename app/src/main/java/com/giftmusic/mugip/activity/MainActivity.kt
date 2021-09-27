@@ -18,6 +18,7 @@ import androidx.fragment.app.commit
 import com.giftmusic.mugip.BaseActivity
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
+import com.giftmusic.mugip.fragment.DiggingFeedFragment
 import com.giftmusic.mugip.fragment.MainFragment
 import com.giftmusic.mugip.fragment.ProfileFragment
 import com.giftmusic.mugip.models.User
@@ -78,9 +79,19 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
         }
         openPlayListActivityButton.setOnClickListener {
-            openMapActivityButton.isSelected = false
-            openPlayListActivityButton.isSelected = true
-            openProfileActivityButton.isSelected = false
+            supportFragmentManager.commit {
+                if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment && user != null){
+                    openMapActivityButton.isSelected = false
+                    openPlayListActivityButton.isSelected = true
+                    openProfileActivityButton.isSelected = false
+                    add(R.id.content_main, DiggingFeedFragment(user!!))
+                } else if(supportFragmentManager.findFragmentById(R.id.content_main)!! !is DiggingFeedFragment && user != null){
+                    openMapActivityButton.isSelected = false
+                    openPlayListActivityButton.isSelected = true
+                    openProfileActivityButton.isSelected = false
+                    replace(R.id.content_main, DiggingFeedFragment(user!!))
+                }
+            }
         }
         openMapActivityButton.setOnClickListener {
             supportFragmentManager.commit {

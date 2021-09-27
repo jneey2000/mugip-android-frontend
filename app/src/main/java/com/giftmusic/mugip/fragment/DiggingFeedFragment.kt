@@ -5,23 +5,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.activity.AlarmActivity
-import com.giftmusic.mugip.activity.UploadActivity
-import com.giftmusic.mugip.adapter.MyProfileFragmentStateAdapter
+import com.giftmusic.mugip.adapter.DiggingFeedFragmentStateAdapter
 import com.giftmusic.mugip.models.User
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
-class ProfileFragment(val user: User) : Fragment() {
+class DiggingFeedFragment(val user: User) : Fragment() {
     lateinit var viewPager2 : ViewPager2
     lateinit var tabLayout: TabLayout
-    private val tabTextList = arrayListOf("History", "Others")
+    private val tabTextList = arrayListOf("주변", "인기", "태그")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,7 +26,7 @@ class ProfileFragment(val user: User) : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
-        val layout = inflater.inflate(R.layout.fragment_my_profile, container, false)
+        val layout = inflater.inflate(R.layout.fragment_digging_feed, container, false)
 
         val backButton = layout.findViewById<ImageView>(R.id.back_to_map_from_profile)
         backButton.setOnClickListener {
@@ -43,28 +40,12 @@ class ProfileFragment(val user: User) : Fragment() {
             startActivity(intent)
         }
 
-        val uploadButton = layout.findViewById<Button>(R.id.upload_button)
-        uploadButton.setOnClickListener {
-            val intent = Intent(this.activity, UploadActivity::class.java)
-            startActivity(intent)
-        }
-
-        viewPager2 = layout.findViewById(R.id.my_profile_tab_pager)
-        tabLayout = layout.findViewById(R.id.my_profile_tab_layout)
-        viewPager2.adapter = MyProfileFragmentStateAdapter(this.requireActivity())
+        viewPager2 = layout.findViewById(R.id.digging_feed_tab_pager)
+        tabLayout = layout.findViewById(R.id.digging_feed_tab_layout)
+        viewPager2.adapter = DiggingFeedFragmentStateAdapter(this.requireActivity())
         TabLayoutMediator(tabLayout, viewPager2){
                 tab, position -> tab.text = tabTextList[position]
         }.attach()
-
-        val userIDTextView = layout.findViewById<TextView>(R.id.profile_id)
-        val userNickNameTextView = layout.findViewById<TextView>(R.id.profile_nickname)
-        val userProfileImageView = layout.findViewById<ImageView>(R.id.profile_image_view)
-
-        userIDTextView.text = user.userName
-        userNickNameTextView.text = user.nickname
-        if(user.profileImage != null){
-            userProfileImageView.setImageBitmap(user.profileImage!!)
-        }
 
         return layout
     }

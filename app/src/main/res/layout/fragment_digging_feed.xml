@@ -5,51 +5,45 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/layout_profile"
-    android:background="#3D2B9A"
+    android:background="#E8E6FF"
     tools:context=".activity.MainActivity">
 
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingHorizontal="20dp"
         android:orientation="vertical">
 
         <!-- 상단 뒤로 및 알람 버튼 -->
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_marginVertical="20dp"
             android:layout_marginBottom="50dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:paddingHorizontal="20dp"
             android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/back_to_map_from_profile"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
                 android:src="@drawable/ic_back"
-                />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Digging"
-                android:textColor="@color/white"
-                android:textSize="15sp"
-                android:gravity="center"
                 />
 
             <RelativeLayout
                 android:layout_width="40dp"
                 android:layout_marginStart="10dp"
-                android:layout_height="match_parent" >
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true">
                 <ImageView
                     android:id="@+id/notification_button_profile"
                     android:layout_width="40dp"
                     android:layout_marginStart="10dp"
                     android:layout_height="match_parent"
-                    android:src="@drawable/notification_icon_white" />
+                    android:src="@drawable/notification_icon" />
 
                 <TextView
                     android:id="@+id/notification_count"
@@ -75,43 +69,36 @@
                     android:layout_alignParentEnd="true"
                     />
             </RelativeLayout>
-        </LinearLayout>
+        </RelativeLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:paddingTop="20dp"
+        <EditText
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            >
-
-            <Button
-                android:id="@+id/show_my_playlist_button"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginHorizontal="10dp"
-                android:background="@drawable/button_primary_selector"
-                android:text="MY"
-                android:textColor="@color/white" />
-
-            <Button
-                android:id="@+id/show_playlist_made_by_me_button"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginHorizontal="10dp"
-                android:text="Author"
-                android:textColor="@color/white"
-                android:background="@drawable/button_primary_selector"
+            android:layout_height="40dp"
+            android:layout_marginHorizontal="20dp"
+            android:background="@drawable/round_corner_search_bar"
+            android:drawableEnd="@drawable/search_bar_drawable_size"
+            android:paddingHorizontal="15dp"
             />
 
-        </LinearLayout>
-        <androidx.fragment.app.FragmentContainerView
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/digging_feed_tab_layout"
+            android:layout_width="match_parent"
+            app:tabIndicatorFullWidth="false"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_marginHorizontal="20dp"
+            app:tabGravity="fill"
+            app:tabSelectedTextColor="#4A31A9"
+            app:tabTextColor="#8a80ba"
+            app:tabIndicatorColor="#8a80ba"
+            app:tabIndicatorHeight="5dp"
+            app:tabMode="fixed" />
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/digging_feed_tab_pager"
+            android:layout_marginTop="20dp"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:id="@+id/profile_fragment"
-        />
+            android:layout_weight="1" />
     </LinearLayout>
-
-
 </RelativeLayout>

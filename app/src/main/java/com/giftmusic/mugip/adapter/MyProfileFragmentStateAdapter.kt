@@ -6,7 +6,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.giftmusic.mugip.fragment.HistoryFragment
 import com.giftmusic.mugip.fragment.PlaylistFragment
 
-class OtherUserFragmentStateAdapter(fragmentActivity: FragmentActivity) : FragmentStateAdapter(fragmentActivity) {
+class MyProfileFragmentStateAdapter(fragmentActivity: FragmentActivity) : FragmentStateAdapter(fragmentActivity) {
     override fun getItemCount(): Int {
         return 2
     }
