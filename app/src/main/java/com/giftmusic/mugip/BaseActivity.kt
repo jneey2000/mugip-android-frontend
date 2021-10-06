@@ -4,11 +4,11 @@ import androidx.appcompat.app.AppCompatActivity
 
 open class BaseActivity : AppCompatActivity() {
     fun progressOn(){
-        BaseApplication.getInstance().progressON(this, null)
+        BaseApplication.getInstance().progressOn(this, null)
     }
 
     fun progressOn(message: String){
-        BaseApplication.getInstance().progressON(this, message)
+        BaseApplication.getInstance().progressOn(this, message)
     }
 
     fun progressOFF(){

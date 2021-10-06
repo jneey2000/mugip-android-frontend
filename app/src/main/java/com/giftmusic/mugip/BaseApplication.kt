@@ -30,7 +30,7 @@ class BaseApplication : Application() {
         baseApplication = this
     }
 
-    fun progressON(activity : Activity?, message: String?) {
+    fun progressOn(activity : Activity?, message: String?) {
         if (activity == null || activity.isFinishing) {
             return
         }
@@ -52,7 +52,7 @@ class BaseApplication : Application() {
         }
     }
 
-    fun progressSet(message: String?) {
+    private fun progressSet(message: String?) {
         if (progressDialog == null || !progressDialog!!.isShowing) {
             return
         }
