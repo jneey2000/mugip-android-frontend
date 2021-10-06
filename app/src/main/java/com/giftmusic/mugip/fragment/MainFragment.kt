@@ -172,7 +172,6 @@ class MainFragment : Fragment(), OnMapReadyCallback, ActivityCompat.OnRequestPer
         runBlocking1 {
             refreshOtherUser.join()
         }
-        Log.d("Count of other users", otherUserMarkers.size.toString())
         otherUserMarkers.map {
             map.addMarker(it)
         }

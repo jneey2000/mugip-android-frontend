@@ -202,7 +202,6 @@ class LoginActivity : BaseActivity(), CoroutineScope {
 
     private fun signInWithToken(accessToken: String, refreshToken: String){
         val jwtToken = JWT(accessToken)
-        Log.d("Expired at", jwtToken.expiresAt.toString())
         if(jwtToken.isExpired(100)){
             var refreshFailed = true
             var errorCode = -1
@@ -235,7 +234,6 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                             if(inputStream != null){
                                 val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                                 val responseJson = JSONObject(returnBody.trim())
-                                Log.d("receive data", responseJson.toString())
                                 if(responseJson.has("access_token") && responseJson.has("refresh_token")){
                                     refreshFailed = false
                                     editor.putString("access_token", responseJson["access_token"].toString()).apply()
@@ -302,7 +300,6 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                         if(inputStream != null){
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                             val responseJson = JSONObject(returnBody.trim())
-                            Log.d("receive data", responseJson.toString())
                             if(responseJson.has("access_token") && responseJson.has("refresh_token")){
                                 loginFailed = false
                                 editor.putString("access_token", responseJson["access_token"].toString()).apply()
@@ -369,7 +366,6 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                         if(inputStream != null){
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                             val responseJson = JSONObject(returnBody.trim())
-                            Log.d("receive data", responseJson.toString())
                             if(responseJson.has("access_token") && responseJson.has("refresh_token")){
                                 loginFailed = false
                                 editor.putString("access_token", responseJson["access_token"].toString()).apply()

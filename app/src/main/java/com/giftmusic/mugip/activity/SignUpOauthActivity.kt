@@ -52,7 +52,6 @@ class SignUpOauthActivity : BaseActivity(), CoroutineScope {
         nicknameInput.setOnFocusChangeListener { _, hasFocus ->
             if(!hasFocus){
                 val nickname = nicknameInput.text.toString()
-                Log.d("Current Nickname", nickname)
                 checkDuplicateNickname(nickname)
             }
         }
@@ -163,14 +162,12 @@ class SignUpOauthActivity : BaseActivity(), CoroutineScope {
                     os.flush()
                 }
 
-                Log.d("statue code", conn.responseCode.toString())
                 when(conn.responseCode){
                     200 -> {
                         val inputStream = conn.inputStream
                         if(inputStream != null){
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                             val responseJson = JSONObject(returnBody.trim())
-                            Log.d("receive data", responseJson.toString())
                             if(responseJson.has("user_id")){
                                 loginFailed = false
                                 val editor = prefManager.edit()

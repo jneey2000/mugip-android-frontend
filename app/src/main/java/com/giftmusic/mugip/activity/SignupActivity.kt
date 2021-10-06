@@ -143,7 +143,6 @@ class SignupActivity : BaseActivity(), CoroutineScope {
                                 if(inputStream != null){
                                     val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                                     val responseJson = JSONObject(returnBody.trim())
-                                    Log.d("received data", responseJson.toString())
                                     signUpFailed = false
                                 }
                             }
