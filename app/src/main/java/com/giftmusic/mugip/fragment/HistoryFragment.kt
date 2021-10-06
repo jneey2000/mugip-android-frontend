@@ -20,10 +20,6 @@ class HistoryFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        musicList.clear()
-        musicList.add(MusicItem("https://github.com", "멸공의 횃불", "육군", "\uD83D\uDCBB 업무"))
-        musicList.add(MusicItem("https://github.com", "아미타이거", "육군", "\uD83D\uDCBB 업무"))
-        musicList.add(MusicItem("https://github.com", "전우", "육군", "\uD83D\uDCBB 업무"))
 
         return inflater.inflate(R.layout.fragment_my_playing_history, container, false)
     }

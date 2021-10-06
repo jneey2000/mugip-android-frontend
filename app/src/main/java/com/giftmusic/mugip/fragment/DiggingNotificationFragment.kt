@@ -20,9 +20,6 @@ class DiggingNotificationFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        diggingNotificationItemList.clear()
-        diggingNotificationItemList.add(DiggingNotificationItem(OtherUserInvite("jil8885", "이정인", "https://github.com"), "실로암"))
-
         return inflater.inflate(R.layout.fragment_digging_notification, container, false)
     }
 
