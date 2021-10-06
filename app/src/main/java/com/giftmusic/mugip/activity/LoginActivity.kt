@@ -94,7 +94,9 @@ class LoginActivity : BaseActivity(), CoroutineScope {
 
         // 로그인 버튼 클릭했을 때 -> 이메일 형식에 맞는지 검증
         loginButton.setOnClickListener{
-            if(TextUtils.isEmpty(loginID.text.toString()) || !android.util.Patterns.EMAIL_ADDRESS.matcher(loginID.text.toString() as CharSequence).matches() || TextUtils.isEmpty(loginPW.text.toString())) {
+            if(TextUtils.isEmpty(loginID.text.toString()) ||
+                !android.util.Patterns.EMAIL_ADDRESS.matcher(loginID.text.toString() as CharSequence).matches() ||
+                TextUtils.isEmpty(loginPW.text.toString())) {
                 showDialog("이메일 입력 오류", "올바른 이메일 형식이 아닙니다.")
             } else {
                 signInWithEmail(loginID.text.toString(), loginPW.text.toString())
