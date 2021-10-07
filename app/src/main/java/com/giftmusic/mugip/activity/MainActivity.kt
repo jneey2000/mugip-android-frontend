@@ -1,361 +1,300 @@
 package com.giftmusic.mugip.activity
 
-import android.Manifest
 import android.app.AlertDialog
-import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
-import android.location.Location
-import android.location.LocationManager
 import android.os.Bundle
-import android.os.Looper
-import android.provider.Settings
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
-import android.view.WindowManager
-import android.widget.Button
-import android.widget.HorizontalScrollView
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
+import android.widget.TextView
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.commit
+import com.giftmusic.mugip.BaseActivity
+import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
-import com.giftmusic.mugip.models.OtherUser
-import com.google.android.gms.location.*
-import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.*
-import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import java.io.FileNotFoundException
+import com.giftmusic.mugip.fragment.DiggingFeedFragment
+import com.giftmusic.mugip.fragment.MainFragment
+import com.giftmusic.mugip.fragment.ProfileFragment
+import com.giftmusic.mugip.models.User
+import com.google.android.material.navigation.NavigationView
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
+import com.google.gson.Gson
+import kotlinx.coroutines.*
+import org.json.JSONObject
+import java.io.BufferedReader
 import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
 import java.net.URL
+import kotlin.coroutines.CoroutineContext
 
 
-class MainActivity : AppCompatActivity(), OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback {
-    // 구글 지도 및 현재 위치를 기준으로 한 반경원 객체
-    private var map : GoogleMap? = null
-    private var currentLocation : Circle? = null
-    private val defaultCameraPosition = LatLng(37.29685208641291, 126.83724122364636)
+class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener, CoroutineScope {
+    private lateinit var job: Job
+    private lateinit var userNameTextView : TextView
+    private lateinit var userProfileImageView: ImageView
+    private var user : User? = null
 
-    // 워치 권한 요청을 위한 변수들
-    private val locationRequestCode = 2001
-    private val locationUpdateInterval = 1L
-    private val locationUpdateIntervalFastest : Long = 0.5.toLong()
-    private val permissionRequestCode = 100
-    private var needRequest = false
-    private val requiredPermissions = arrayOf(
-        Manifest.permission.ACCESS_FINE_LOCATION,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    )
+    private lateinit var openProfileActivityButton : ImageView
+    private lateinit var openPlayListActivityButton : ImageView
+    private lateinit var openMapActivityButton : ImageView
 
-    // 위치 업데이트를 위한 변수들
-    private lateinit var currentPosition: LatLng
-    private val locationCallback = object: LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            super.onLocationResult(locationResult)
-            val locationList = locationResult.locations
-            if(locationList.isNotEmpty()){
-                location = locationList[locationList.size-1]
-                currentPosition = LatLng(location.latitude, location.longitude)
-                setCurrentLocation(location)
-            }
-        }
-    }
-
-    private lateinit var mFusedLocationClient: FusedLocationProviderClient
-    private lateinit var locationRequest: LocationRequest
-    private lateinit var location: Location
-    private lateinit var mLayout : View
-
-    // 다른 사용자를 담기 위한 변수들
-    private val otherUsers = ArrayList<OtherUser>()
-    private val otherUserMarkers = ArrayList<MarkerOptions>()
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + job
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 화면 계속 켜져 있게
-        window.setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        job = Job()
         setContentView(R.layout.activity_main)
-        mLayout = findViewById(R.id.layout_main)
+        val navigationView = findViewById<View>(R.id.nav_view) as NavigationView
+        navigationView.setNavigationItemSelectedListener(this)
 
-        // 위치 권한 요청
-        locationRequest = LocationRequest.create().setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-            .setInterval(locationUpdateInterval).setFastestInterval(locationUpdateIntervalFastest)
-        val builder = LocationSettingsRequest.Builder()
-        builder.addLocationRequest(locationRequest)
+        supportFragmentManager.commit {
+            add(R.id.content_main, MainFragment())
+        }
 
-        // 위치 얻기
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-        // 지도 Fragment
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-
-        otherUsers.add(OtherUser("https://raw.githubusercontent.com/Gift-Music/mugip-android-frontend/MVP/Jeongin/test_assets/user_1.png?token=ACQXZAY2XLEHCBD5Z7CXWDDA6DPJ2", LatLng(37.299914556000154, 126.8410831016941)))
-        
-        // 상단 카테고리 버튼 동작
-        val selectedCategoryButton = findViewById<Button>(R.id.selected_category)
-        val selectCategoryAllButton = findViewById<Button>(R.id.select_category_all)
-        val selectCategoryExerciseButton = findViewById<Button>(R.id.select_category_exercise)
-        val selectCategoryWorkButton = findViewById<Button>(R.id.select_category_work)
-        val selectCategoryReadingButton = findViewById<Button>(R.id.select_category_reading)
-        val selectCategoryDriveButton = findViewById<Button>(R.id.select_category_drive)
-        val selectCategoryTripButton = findViewById<Button>(R.id.select_category_trip)
-        val selectCategoryProgrammingButton = findViewById<Button>(R.id.select_category_programming)
-        val selectCategoryShowerButton = findViewById<Button>(R.id.select_category_shower)
-        selectedCategoryButton.setOnClickListener(CategoryButtonListener())
-        selectCategoryAllButton.setOnClickListener(CategoryButtonListener())
-        selectCategoryExerciseButton.setOnClickListener(CategoryButtonListener())
-        selectCategoryWorkButton.setOnClickListener(CategoryButtonListener())
-        selectCategoryReadingButton.setOnClickListener(CategoryButtonListener())
-        selectCategoryDriveButton.setOnClickListener(CategoryButtonListener())
-        selectCategoryTripButton.setOnClickListener(CategoryButtonListener())
-        selectCategoryProgrammingButton.setOnClickListener(CategoryButtonListener())
-        selectCategoryShowerButton.setOnClickListener(CategoryButtonListener())
+        // 하단 메뉴 버튼
+        openProfileActivityButton = findViewById(R.id.ic_profile)
+        openPlayListActivityButton = findViewById(R.id.ic_playlist)
+        openMapActivityButton = findViewById(R.id.center_button)
+        openProfileActivityButton.setOnClickListener {
+            supportFragmentManager.commit {
+                if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment && user != null){
+                    openMapActivityButton.isSelected = false
+                    openPlayListActivityButton.isSelected = false
+                    openProfileActivityButton.isSelected = true
+                    add(R.id.content_main, ProfileFragment(user!!))
+                } else if(supportFragmentManager.findFragmentById(R.id.content_main)!! !is ProfileFragment && user != null){
+                    openMapActivityButton.isSelected = false
+                    openPlayListActivityButton.isSelected = false
+                    openProfileActivityButton.isSelected = true
+                    replace(R.id.content_main, ProfileFragment(user!!))
+                }
+            }
+        }
+        openPlayListActivityButton.setOnClickListener {
+            supportFragmentManager.commit {
+                if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment && user != null){
+                    openMapActivityButton.isSelected = false
+                    openPlayListActivityButton.isSelected = true
+                    openProfileActivityButton.isSelected = false
+                    add(R.id.content_main, DiggingFeedFragment(user!!))
+                } else if(supportFragmentManager.findFragmentById(R.id.content_main)!! !is DiggingFeedFragment && user != null){
+                    openMapActivityButton.isSelected = false
+                    openPlayListActivityButton.isSelected = true
+                    openProfileActivityButton.isSelected = false
+                    replace(R.id.content_main, DiggingFeedFragment(user!!))
+                }
+            }
+        }
+        openMapActivityButton.setOnClickListener {
+            supportFragmentManager.commit {
+                if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment){
+                    (supportFragmentManager.findFragmentById(R.id.content_main)!! as MainFragment).fetchLocation()
+                    openMapActivityButton.isSelected = true
+                    openPlayListActivityButton.isSelected = false
+                    openProfileActivityButton.isSelected = false
+                } else{
+                    remove(supportFragmentManager.findFragmentById(R.id.content_main)!!)
+                    openMapActivityButton.isSelected = true
+                    openPlayListActivityButton.isSelected = false
+                    openProfileActivityButton.isSelected = false
+                }
+            }
+        }
+        openMapActivityButton.isSelected = true
+        openPlayListActivityButton.isSelected = false
+        openProfileActivityButton.isSelected = false
+        // 사용자 정보 로딩
+        userNameTextView = navigationView.getHeaderView(0).findViewById(R.id.nav_bar_user_name)
+        userProfileImageView = navigationView.getHeaderView(0).findViewById(R.id.nav_bar_profile_image)
+        getMyInformation()
     }
 
-    override fun onMapReady(map: GoogleMap) {
-        // 위치 수신이 안될때를 대비해 default 위치로 이동
-        setDefaultLocation()
-        // 권한 확인
-        val hasFinePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        val hasCoarsePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        // 권한이 있으면 사용자 위치로 이동
-        if(hasFinePermission && hasCoarsePermission){
-            startLocationUpdates()
+    override fun onBackPressed() {
+        val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START)
         } else {
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, requiredPermissions[0])){
-                Snackbar.make(mLayout, "이 앱을 실행하려면 위치 접근 권한이 필요합니다.", Snackbar.LENGTH_INDEFINITE)
-                    .setAction("확인") {
-                        ActivityCompat.requestPermissions(
-                            this,
-                            requiredPermissions,
-                            permissionRequestCode
-                        )
-                    }.show()
+            if(supportFragmentManager.findFragmentById(R.id.content_main)!! is MainFragment){
+                super.onBackPressed()
             } else {
-                ActivityCompat.requestPermissions(this, requiredPermissions, permissionRequestCode)
-            }
-        }
-
-        // 현재 위치로 이동할 수 있는 버튼 추가
-        map.uiSettings.isMyLocationButtonEnabled = false
-        val currentLocationButton = findViewById<ImageView>(R.id.ic_location).setOnClickListener {
-            mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
-        }
-    }
-
-
-    private fun startLocationUpdates() {
-        if (!checkLocationServicesStatus()) {
-            Log.d(TAG, "startLocationUpdates : call showDialogForLocationServiceSetting")
-            showDialogForLocationServiceSetting()
-        } else {
-            val hasFineLocationPermission = ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-            val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-            if (hasFineLocationPermission != PackageManager.PERMISSION_GRANTED ||
-                hasCoarseLocationPermission != PackageManager.PERMISSION_GRANTED
-            ) {
-                Log.d(TAG, "startLocationUpdates : 퍼미션 안가지고 있음")
-                return
-            }
-            Log.d(TAG, "startLocationUpdates : call mFusedLocationClient.requestLocationUpdates")
-            mFusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                Looper.myLooper()
-            )
-            if (checkPermission() && map != null) map!!.isMyLocationEnabled = true
-        }
-    }
-
-
-    override fun onStart() {
-        super.onStart()
-        Log.d(TAG, "onStart")
-        if (checkPermission()) {
-            Log.d(TAG, "onStart : call mFusedLocationClient.requestLocationUpdates")
-            mFusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
-            if(map != null){
-                map!!.uiSettings.isMyLocationButtonEnabled = false;
+                supportFragmentManager.commit {
+                    remove(supportFragmentManager.findFragmentById(R.id.content_main)!!)
+                    openMapActivityButton.isSelected = true
+                    openPlayListActivityButton.isSelected = false
+                    openProfileActivityButton.isSelected = false
+                }
             }
         }
     }
 
-
-    override fun onStop() {
-        super.onStop()
-        Log.d(TAG, "onStop : call stopLocationUpdates")
-        mFusedLocationClient.removeLocationUpdates(locationCallback)
-    }
-
-    private fun checkLocationServicesStatus(): Boolean {
-        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-        return (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
-    }
-
-
-    fun setCurrentLocation(location: Location) {
-        if(currentLocation != null){
-            currentLocation!!.remove()
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        val drawer = findViewById<View>(R.id.drawer_layout) as DrawerLayout
+        drawer.closeDrawer(GravityCompat.START)
+        when(item.itemId){
+            R.id.logout_button -> logoutButtonClicked()
         }
-        val currentLatLng = LatLng(location.latitude, location.longitude)
-        val circleOption = CircleOptions().center(currentLatLng).fillColor(Color.parseColor("#556B63FF")).radius(2000.0).strokeWidth(0f)
-        if(map!=null){
-            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLatLng, 12F)
-            map!!.moveCamera(cameraUpdate)
-            currentLocation = map!!.addCircle(circleOption)
-            otherUserMarkers.clear()
-            val refreshOtherUser = GlobalScope.launch {
-                otherUsers.map {
-                    var bitmap : Bitmap
-                    try{
-                        val url = URL(it.imageUrl)
-                        val conn = url.openConnection() as HttpURLConnection;
-                        conn.doInput = true; // 서버로 부터 응답 수신
-                        conn.connect();
+        return true
+    }
 
-                        val inputStream = conn.inputStream; // InputStream 값 가져오기
-                        bitmap = BitmapFactory.decodeStream(inputStream)
-                    } catch (e: FileNotFoundException){
-                        val markerImage = ResourcesCompat.getDrawable(resources,
-                            R.drawable.user_1, null) as BitmapDrawable
-                        bitmap = Bitmap.createScaledBitmap(markerImage.bitmap, 50, 50, false)
+    private fun getMyInformation(){
+        progressOn("사용자 정보 불러오는 중...")
+        var loadingFailed = true
+        val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
+        var errorMessage = ""
+
+        launch {
+            val url = URL(BuildConfig.server_url + "/user/")
+            val conn = url.openConnection() as HttpURLConnection
+            try {
+                conn.requestMethod = "GET"
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.setRequestProperty("Accept", "application/json")
+                conn.setRequestProperty("Authorization", "Basic ${prefManager.getString("access_token", "")}")
+                conn.doInput = true
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+
+                when(conn.responseCode){
+                    200 -> {
+                        val inputStream = conn.inputStream
+                        if(inputStream != null){
+                            val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                            val responseJson = JSONObject(returnBody.trim())
+                            if(responseJson.has("user_id") && responseJson.has("user_name") &&
+                                responseJson.has("email") && responseJson.has("user_nickname")){
+                                user = User(
+                                    responseJson.getString("user_id"),
+                                    responseJson.getString("user_nickname"),
+                                    responseJson.getString("user_name"),
+                                    responseJson.getString("email"),
+                                    null
+                                )
+                                loadingFailed = false
+                                if(responseJson.has("profile_image")){
+                                    val imageURL = URL(responseJson.getString("profile_image"))
+                                    user!!.profileImage = BitmapFactory.decodeStream(imageURL.openConnection().getInputStream())
+                                }
+
+                                // 사용자에 대한 알림을 받을 수 있도록 FCM 구독
+                                Firebase.messaging.subscribeToTopic(user!!.userID).addOnCompleteListener {
+
+                                }
+                            }
+                        }
                     }
-
-                    val markerOptions = MarkerOptions()
-                    markerOptions.position(it.location)
-                    markerOptions.draggable(true)
-                    markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap))
-                    otherUserMarkers.add(markerOptions)
+                    else -> errorMessage = conn.responseCode.toString()
                 }
             }
-            runBlocking {
-                refreshOtherUser.join()
+            catch (e : SocketTimeoutException){
+                errorMessage = "연결 시간 초과 오류"
             }
-            Log.d("Count of other users", otherUserMarkers.size.toString())
-            otherUserMarkers.map {
-                map!!.addMarker(it)
+            catch (e : Exception){
+                Log.e("fetch user information error", e.toString())
+                Log.e("fetch user information error", e.javaClass.kotlin.toString())
             }
-        }
-    }
-
-
-    private fun setDefaultLocation() {
-        //디폴트 위치, Seoul
-        if(currentLocation != null){
-            currentLocation!!.remove()
-        }
-        if(map!=null){
-            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(defaultCameraPosition, 12F)
-            map!!.moveCamera(cameraUpdate)
-        }
-    }
-
-
-    //여기부터는 런타임 퍼미션 처리을 위한 메소드들
-    private fun checkPermission(): Boolean {
-        val hasFineLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        return hasCoarseLocationPermission && hasFineLocationPermission
-    }
-
-
-    override fun onRequestPermissionsResult(permsRequestCode: Int, permissions: Array<String?>, grandResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(permsRequestCode, permissions, grandResults)
-        if (permsRequestCode == permissionRequestCode && grandResults.size == requiredPermissions.size) {
-            var checkResult = true
-            // 모든 퍼미션을 허용했는지 체크합니다.
-            for (result in grandResults) {
-                if (result != PackageManager.PERMISSION_GRANTED) {
-                    checkResult = false
-                    break
-                }
+            finally {
+                conn.disconnect()
             }
-            if (checkResult) {
-                startLocationUpdates()
-            } else {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, requiredPermissions[0]) || ActivityCompat.shouldShowRequestPermissionRationale(this, requiredPermissions[1])
-                ) {
-                    Snackbar.make(mLayout, "퍼미션이 거부되었습니다. 앱을 다시 실행하여 퍼미션을 허용해주세요.", Snackbar.LENGTH_INDEFINITE).setAction("확인") { finish() }.show()
-                } else {
-                    Snackbar.make(mLayout, "퍼미션이 거부되었습니다. 설정(앱 정보)에서 퍼미션을 허용해야 합니다. ", Snackbar.LENGTH_INDEFINITE).setAction("확인") { finish() }.show()
-                }
-            }
-        }
-    }
-
-
-    //여기부터는 GPS 활성화를 위한 메소드들
-    private fun showDialogForLocationServiceSetting() {
-        val builder = AlertDialog.Builder(this@MainActivity)
-        builder.setTitle("위치 서비스 비활성화")
-        builder.setMessage(
-            """
-            앱을 사용하기 위해서는 위치 서비스가 필요합니다.
-            위치 설정을 수정하실래요?
-            """.trimIndent()
-        )
-        builder.setCancelable(true)
-        builder.setPositiveButton("설정", DialogInterface.OnClickListener { dialog, id ->
-            val callGPSSettingIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            startActivityForResult(callGPSSettingIntent, locationRequestCode)
-        })
-        builder.setNegativeButton("취소",
-            DialogInterface.OnClickListener { dialog, id -> dialog.cancel() })
-        builder.create().show()
-    }
-
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            locationRequestCode ->
-                if (checkLocationServicesStatus() && checkLocationServicesStatus()) {
-                    Log.d(TAG, "onActivityResult : GPS 활성화 되있음")
-                    needRequest = true
-                    return
-                }
-        }
-    }
-
-    inner class CategoryButtonListener : View.OnClickListener{
-        override fun onClick(v: View?) {
-            val categoryScrollView = findViewById<HorizontalScrollView>(R.id.select_category_scrollview)
-            val selectedCategoryButton = findViewById<Button>(R.id.selected_category)
-            when(v?.id){
-                R.id.selected_category ->{
-                    if(categoryScrollView.visibility == View.VISIBLE){
-                        categoryScrollView.visibility = View.INVISIBLE
-                    } else{
-                        categoryScrollView.visibility = View.VISIBLE
+            withContext(Dispatchers.Main){
+                progressOFF()
+                if(!loadingFailed && user != null){
+                    userNameTextView.text = user!!.nickname
+                    if(user!!.profileImage != null){
+                        userProfileImageView.setImageBitmap(user!!.profileImage)
                     }
-                }
-                else -> {
-                    if(categoryScrollView.visibility == View.VISIBLE){
-                        selectedCategoryButton.text = findViewById<Button>(v?.id!!).text
-                        categoryScrollView.visibility = View.INVISIBLE
-                    }
+                } else if(errorMessage.isNotEmpty()){
+                    showFailDialog("사용자 정보 로딩 실패", errorMessage)
                 }
             }
         }
-
     }
 
+
+    private fun logoutButtonClicked(){
+        progressOn("로그아웃 중...")
+        var logoutFailed = true
+        val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
+        var errorMessage = ""
+        launch {
+            val url = URL(BuildConfig.server_url + "/user/logout")
+            val conn = url.openConnection() as HttpURLConnection
+            try {
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.setRequestProperty("Accept", "application/json")
+                conn.setRequestProperty("Authorization", "Basic ${prefManager.getString("access_token", "")}")
+                conn.doOutput = true
+                conn.doInput = true
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+
+                val requestJson = HashMap<String, String>()
+
+                conn.outputStream.use { os ->
+                    val input: ByteArray =
+                        Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                    os.write(input, 0, input.size)
+                    os.flush()
+                }
+
+                when(conn.responseCode){
+                    200 -> {
+                        val inputStream = conn.inputStream
+                        if(inputStream != null){
+                            val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                            val responseJson = JSONObject(returnBody.trim())
+                            if(responseJson.getBoolean("successed")){
+                                logoutFailed = false
+                            }
+                        }
+                    }
+                    else -> errorMessage = conn.responseCode.toString()
+                }
+            }
+            catch (e : SocketTimeoutException){
+                errorMessage = "연결 시간 초과 오류"
+            }
+            catch (e : Exception){
+                Log.e("Logout error", e.javaClass.kotlin.toString())
+            }
+            finally {
+                conn.disconnect()
+            }
+            withContext(Dispatchers.Main){
+                progressOFF()
+                if(!logoutFailed){
+                    moveToLoginActivity()
+
+                } else if(errorMessage.isNotEmpty()){
+                    showFailDialog("회원가입 실패", errorMessage)
+                }
+            }
+        }
+    }
+
+    private fun showFailDialog(title: String, errorMessage: String){
+        val dialogBuilder = AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(errorMessage)
+            .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
+            }
+        val dialog = dialogBuilder.create()
+        dialog.show()
+    }
+
+    private fun moveToLoginActivity(){
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
+        startActivity(intent)
+        finish()
+    }
+    
 }

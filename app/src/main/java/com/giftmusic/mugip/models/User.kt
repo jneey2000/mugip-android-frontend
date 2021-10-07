@@ -1,8 +1,11 @@
 package com.giftmusic.mugip.models
 
-import com.google.android.gms.maps.model.LatLng
+import android.graphics.Bitmap
 
-class OtherUser(imageUrl: String, location: LatLng) {
-    val imageUrl : String = imageUrl
-    val location : LatLng = location
-}
+data class User(
+    val userID : String,
+    val nickname : String,
+    val userName : String,
+    val email : String,
+    var profileImage : Bitmap?
+)
