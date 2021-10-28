@@ -34,7 +34,6 @@ class SignupActivity : BaseActivity(), CoroutineScope {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sign_up)
         job = Job()
-        val idInput = findViewById<EditText>(R.id.sign_up_id)
         val passwordInput = findViewById<EditText>(R.id.sign_up_password)
         val passwordConfirmInput = findViewById<EditText>(R.id.sign_up_password_confirm)
         val passwordConfirmString = findViewById<TextView>(R.id.sign_up_password_confirm_string)
@@ -101,8 +100,6 @@ class SignupActivity : BaseActivity(), CoroutineScope {
                 showDialog("회원가입 실패", "이미 가입된 이메일입니다.")
             } else if(!Patterns.EMAIL_ADDRESS.matcher(emailInput.text.toString()).matches()){
                 showDialog("회원가입 실패", "올바른 이메일 형식이 아닙니다.")
-            } else if(idInput.text.toString().isEmpty()){
-                showDialog("회원가입 실패", "아이디를 입력해주십시오.")
             } else if(nicknameInput.text.toString().isEmpty()) {
                 showDialog("회원가입 실패", "닉네임을 입력해주십시오.")
             } else if(passwordInput.text.toString().isEmpty() || passwordConfirmInput.text.toString().isEmpty()){
@@ -114,7 +111,7 @@ class SignupActivity : BaseActivity(), CoroutineScope {
                 var errorCode = -1
                 progressOn("회원가입 시도 중...")
                 launch {
-                    val url = URL(BuildConfig.server_url + "/user/signup")
+                    val url = URL(BuildConfig.server_url + "/auth/signup")
                     val conn = url.openConnection() as HttpURLConnection
                     try {
                         conn.requestMethod = "POST"
@@ -125,7 +122,6 @@ class SignupActivity : BaseActivity(), CoroutineScope {
 
                         val requestJson = HashMap<String, String>()
                         requestJson["nickname"] = nicknameInput.text.toString()
-                        requestJson["username"] = idInput.text.toString()
                         requestJson["email"] = emailInput.text.toString()
                         requestJson["password"] = passwordInput.text.toString()
 
@@ -162,6 +158,7 @@ class SignupActivity : BaseActivity(), CoroutineScope {
                     withContext(Main){
                         if(signUpFailed){
                             showDialog("회원가입 실패", "회원가입 실패($errorCode)")
+                            progressOFF()
                         } else{
                             showSuccessToSignUpDialog()
                         }

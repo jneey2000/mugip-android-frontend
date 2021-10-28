@@ -273,7 +273,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
         val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
         val editor = prefManager.edit()
         launch {
-            val url = URL(BuildConfig.server_url + "/user/login/oauth")
+            val url = URL(BuildConfig.server_url + "/auth/login/oauth")
             val conn = url.openConnection() as HttpURLConnection
             try {
                 conn.requestMethod = "POST"
@@ -283,9 +283,9 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                 conn.doInput = true
 
                 val requestJson = HashMap<String, String>()
-                requestJson["Email"] = email
-                requestJson["Uid"] = uid
-                requestJson["Provider"] = provider
+                requestJson["email"] = email
+                requestJson["uid"] = uid
+                requestJson["provider"] = provider
 
                 conn.outputStream.use { os ->
                     val input: ByteArray =
@@ -321,8 +321,8 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                 progressOFF()
                 if(loginFailed){
                     when(errorCode){
-                        401 -> showDialog("인증 오류", "인증 오류 $errorCode")
                         409 -> showFailToOauthLoginDialog(email, uid, provider)
+                        else -> showDialog("인증 오류", "인증 오류 $errorCode")
                     }
                 } else{
                     moveToMainActivity()
@@ -338,7 +338,7 @@ class LoginActivity : BaseActivity(), CoroutineScope {
         val editor = prefManager.edit()
         var errorMessage = ""
         launch {
-            val url = URL(BuildConfig.server_url + "/user/login")
+            val url = URL(BuildConfig.server_url + "/auth/login")
             val conn = url.openConnection() as HttpURLConnection
             try {
                 conn.requestMethod = "POST"
@@ -350,8 +350,8 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                 conn.readTimeout = 5000
 
                 val requestJson = HashMap<String, String>()
-                requestJson["Email"] = email
-                requestJson["Password"] = password
+                requestJson["email"] = email
+                requestJson["password"] = password
 
                 conn.outputStream.use { os ->
                     val input: ByteArray =
