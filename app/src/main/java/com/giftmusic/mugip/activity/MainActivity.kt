@@ -1,7 +1,6 @@
 package com.giftmusic.mugip.activity
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
@@ -15,6 +14,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.core.app.ActivityCompat
@@ -22,22 +22,16 @@ import androidx.core.content.res.ResourcesCompat
 import com.giftmusic.mugip.BaseActivity
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
-import com.giftmusic.mugip.fragment.OtherUserFragment
 import com.giftmusic.mugip.models.OtherUserOnMap
-import com.giftmusic.mugip.models.SearchUser
-import com.giftmusic.mugip.models.SearchUserItem
 import com.giftmusic.mugip.models.User
+import com.giftmusic.mugip.models.response.SearchUserItem
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.material.navigation.NavigationView
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 import com.google.gson.Gson
@@ -50,6 +44,19 @@ import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
 import kotlin.coroutines.CoroutineContext
+import com.google.gson.reflect.TypeToken.getArray
+import android.graphics.drawable.ColorDrawable
+
+import android.widget.AdapterView
+
+import android.widget.SimpleAdapter
+
+import android.view.LayoutInflater
+import android.view.WindowManager
+import android.widget.AdapterView.OnItemClickListener
+import androidx.recyclerview.widget.RecyclerView
+import com.giftmusic.mugip.adapter.SearchUserListViewAdapter
+import com.giftmusic.mugip.ui.SearchUserDialog
 
 
 class MainActivity : BaseActivity(), CoroutineScope,
@@ -62,7 +69,6 @@ class MainActivity : BaseActivity(), CoroutineScope,
     private lateinit var openProfileActivityButton : ImageView
     private lateinit var openPlayListActivityButton : ImageView
     private lateinit var openMapActivityButton : ImageView
-    private lateinit var mapView: MapView
     private val REQUEST_CODE = 1001
     private val otherUsers = ArrayList<OtherUserOnMap>() // 다른 사용자를 담기 위한 배열
     private val otherUserMarkers = ArrayList<MarkerOptions>() // 다른 사용자의 마커를 담기 위한 배열
@@ -79,9 +85,8 @@ class MainActivity : BaseActivity(), CoroutineScope,
         setContentView(R.layout.activity_main)
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-        mapView = findViewById<MapView>(R.id.map)
-        mapView.onCreate(savedInstanceState)
-        mapView.getMapAsync(this)
+        val fragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        fragment.getMapAsync(this)
 
         // 상단 카테고리 버튼 동작
         val selectedCategoryButton = findViewById<Button>(R.id.selected_category)
@@ -105,11 +110,15 @@ class MainActivity : BaseActivity(), CoroutineScope,
 
         // 검색창 event listener
         val searchEditText = findViewById<EditText>(R.id.user_search_edittext)
-        searchEditText.setOnKeyListener { v, keyCode, event ->
-            if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
+        searchEditText.setOnEditorActionListener { v, actionId, event ->
+            if(actionId == EditorInfo.IME_ACTION_DONE){
                 getSearchResult((v as EditText).text.toString())
+                val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(searchEditText.windowToken, 0)
+                true
+            } else {
+                false
             }
-            true
         }
         // 알람 메뉴 버튼
         val openNotificationActivityButton = findViewById<ImageView>(R.id.notification_button_main)
@@ -151,6 +160,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
                 conn.setRequestProperty("Content-Type", "application/json; utf-8")
                 conn.setRequestProperty("Accept", "application/json")
                 conn.doInput = true
+                conn.doOutput = true
                 conn.connectTimeout = 5000
                 conn.readTimeout = 5000
 
@@ -170,14 +180,13 @@ class MainActivity : BaseActivity(), CoroutineScope,
                         if(inputStream != null){
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                             val responseJson = JSONObject(returnBody.trim())
-                            if (responseJson.has("users")){
-                                val result = (responseJson.get("users") as ArrayList<HashMap<String, *>>)
-                                for(item in result){
-                                    searchResult.add(SearchUserItem(
-                                        item["user_id"] as Int, item["email"] as String, item["nickname"] as String
-                                    ))
-                                }
+                            for (i in 0 until responseJson.getJSONArray("users").length()) {
+                                val objects: JSONObject = responseJson.getJSONArray("users").getJSONObject(i)
+                                searchResult.add(SearchUserItem(
+                                    objects.getInt("user_id"), objects.getString("nickname"), objects.getString("email")
+                                ))
                             }
+                            searchUserFailed = false
                         }
                     }
                     else -> errorMessage = conn.responseCode.toString()
@@ -195,11 +204,20 @@ class MainActivity : BaseActivity(), CoroutineScope,
             }
             withContext(Dispatchers.Main){
                 progressOFF()
-                Log.d("result", searchResult.toString())
-                if(!searchUserFailed && user != null){
-                    for(item in searchResult){
-                        Log.d("found", item.toString())
-                    }
+                if(!searchUserFailed){
+                    Log.d("result size", searchResult.size.toString())
+                    val adapter = SearchUserListViewAdapter(searchResult)
+                    val customDialog = SearchUserDialog(this@MainActivity, adapter)
+
+                    val layoutParams = WindowManager.LayoutParams()
+                    layoutParams.copyFrom(customDialog.window!!.attributes)
+                    layoutParams.width = 1200
+                    layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
+
+                    customDialog.show()
+                    val window = customDialog.window
+                    window!!.attributes = layoutParams
+
                 } else if(errorMessage.isNotEmpty()){
                     showFailDialog("사용자 검색 실패", errorMessage)
                 }
@@ -236,7 +254,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
                                 responseJson.has("email") && responseJson.has("nickname")){
                                 user = User(
                                     responseJson.getString("user_id"),
-                                    responseJson.getString("user_nickname"),
+                                    responseJson.getString("nickname"),
                                     responseJson.getString("email"),
                                     null
                                 )
@@ -269,10 +287,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
             withContext(Dispatchers.Main){
                 progressOFF()
                 if(!loadingFailed && user != null){
-                    userNameTextView.text = user!!.nickname
-                    if(user!!.profileImage != null){
-                        userProfileImageView.setImageBitmap(user!!.profileImage)
-                    }
+
                 } else if(errorMessage.isNotEmpty()){
                     showFailDialog("사용자 정보 로딩 실패", errorMessage)
                 }
@@ -326,7 +341,6 @@ class MainActivity : BaseActivity(), CoroutineScope,
                 progressOFF()
                 if(!logoutFailed){
                     moveToLoginActivity()
-
                 } else if(errorMessage.isNotEmpty()){
                     showFailDialog("회원가입 실패", errorMessage)
                 }
@@ -340,7 +354,13 @@ class MainActivity : BaseActivity(), CoroutineScope,
             .setMessage(errorMessage)
             .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
                 when(errorMessage){
-                    "403"->moveToLoginActivity()
+                    "403"->{
+                        val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
+                        val editor = prefManager.edit()
+                        editor.putString("access_token", null).apply()
+                        editor.putString("refresh_token", null).apply()
+                        moveToLoginActivity()
+                    }
                 }
             }
         val dialog = dialogBuilder.create()
@@ -452,32 +472,6 @@ class MainActivity : BaseActivity(), CoroutineScope,
             }
         }
 
-    }
-
-
-    override fun onStart() {
-        super.onStart()
-        mapView.onStart()
-    }
-    override fun onStop() {
-        super.onStop()
-        mapView.onStop()
-    }
-    override fun onResume() {
-        super.onResume()
-        mapView.onResume()
-    }
-    override fun onPause() {
-        super.onPause()
-        mapView.onPause()
-    }
-    override fun onLowMemory() {
-        super.onLowMemory()
-        mapView.onLowMemory()
-    }
-    override fun onDestroy() {
-        mapView.onDestroy()
-        super.onDestroy()
     }
 
 }
