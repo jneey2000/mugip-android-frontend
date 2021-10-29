@@ -168,12 +168,11 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         if(inputStream != null){
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                             val responseJson = JSONObject(returnBody.trim())
-                            if(responseJson.has("user_id") && responseJson.has("user_name") &&
-                                responseJson.has("email") && responseJson.has("user_nickname")){
+                            if(responseJson.has("user_id") &&
+                                responseJson.has("email") && responseJson.has("nickname")){
                                 user = User(
                                     responseJson.getString("user_id"),
                                     responseJson.getString("user_nickname"),
-                                    responseJson.getString("user_name"),
                                     responseJson.getString("email"),
                                     null
                                 )
@@ -227,23 +226,14 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             val url = URL(BuildConfig.server_url + "/user/logout")
             val conn = url.openConnection() as HttpURLConnection
             try {
-                conn.requestMethod = "POST"
+                conn.requestMethod = "GET"
                 conn.setRequestProperty("Content-Type", "application/json; utf-8")
                 conn.setRequestProperty("Accept", "application/json")
                 conn.setRequestProperty("Authorization", "Basic ${prefManager.getString("access_token", "")}")
-                conn.doOutput = true
                 conn.doInput = true
                 conn.connectTimeout = 5000
                 conn.readTimeout = 5000
 
-                val requestJson = HashMap<String, String>()
-
-                conn.outputStream.use { os ->
-                    val input: ByteArray =
-                        Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
-                    os.write(input, 0, input.size)
-                    os.flush()
-                }
 
                 when(conn.responseCode){
                     200 -> {
@@ -251,7 +241,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         if(inputStream != null){
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
                             val responseJson = JSONObject(returnBody.trim())
-                            if(responseJson.getBoolean("successed")){
+                            if(responseJson.getBoolean("success")){
                                 logoutFailed = false
                             }
                         }
@@ -285,6 +275,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             .setTitle(title)
             .setMessage(errorMessage)
             .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
+                when(errorMessage){
+                    "403"->moveToLoginActivity()
+                }
             }
         val dialog = dialogBuilder.create()
         dialog.show()
