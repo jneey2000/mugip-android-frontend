@@ -210,58 +210,62 @@ class LoginActivity : BaseActivity(), CoroutineScope {
         val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
         val editor = prefManager.edit()
         launch {
-            val url = URL(BuildConfig.server_url + "/auth/token/refresh")
-            val conn = url.openConnection() as HttpURLConnection
-            try {
-                conn.requestMethod = "POST"
-                conn.setRequestProperty("Content-Type", "application/json; utf-8")
-                conn.setRequestProperty("Accept", "application/json")
-                conn.doOutput = true
-                conn.doInput = true
+            if(jwtToken.isExpired(100)){
+                val url = URL(BuildConfig.server_url + "/auth/token/refresh")
+                val conn = url.openConnection() as HttpURLConnection
+                try {
+                    conn.requestMethod = "POST"
+                    conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                    conn.setRequestProperty("Accept", "application/json")
+                    conn.doOutput = true
+                    conn.doInput = true
 
-                val requestJson = HashMap<String, String>()
-                requestJson["refresh_token"] = refreshToken
-                requestJson["access_token"] = accessToken
+                    val requestJson = HashMap<String, String>()
+                    requestJson["refresh_token"] = refreshToken
+                    requestJson["access_token"] = accessToken
 
-                conn.outputStream.use { os ->
-                    val input: ByteArray =
-                        Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
-                    os.write(input, 0, input.size)
-                    os.flush()
-                }
+                    conn.outputStream.use { os ->
+                        val input: ByteArray =
+                            Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                        os.write(input, 0, input.size)
+                        os.flush()
+                    }
 
-                when(conn.responseCode){
-                    200 -> {
-                        val inputStream = conn.inputStream
-                        if(inputStream != null){
-                            val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
-                            val responseJson = JSONObject(returnBody.trim())
-                            if(responseJson.has("access_token") && responseJson.has("refresh_token")){
-                                refreshFailed = false
-                                editor.putString("access_token", responseJson["access_token"].toString()).apply()
-                                editor.putString("refresh_token", responseJson["refresh_token"].toString()).apply()
+                    when(conn.responseCode){
+                        200 -> {
+                            val inputStream = conn.inputStream
+                            if(inputStream != null){
+                                val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                                val responseJson = JSONObject(returnBody.trim())
+                                if(responseJson.has("access_token") && responseJson.has("refresh_token")){
+                                    refreshFailed = false
+                                    editor.putString("access_token", responseJson["access_token"].toString()).apply()
+                                    editor.putString("refresh_token", responseJson["refresh_token"].toString()).apply()
+                                }
                             }
                         }
+                        else -> errorCode = conn.responseCode
                     }
-                    else -> errorCode = conn.responseCode
                 }
-            }
-            catch (e : Exception){
-                Log.e("refresh token error", e.message!!)
-            }
-            finally {
-                conn.disconnect()
-            }
+                catch (e : Exception){
+                    Log.e("refresh token error", e.message!!)
+                }
+                finally {
+                    conn.disconnect()
+                }
 
-            withContext(Main){
-                progressOFF()
-                if(refreshFailed){
-                    when(errorCode){
-                        401 -> showDialog("인증 오류", "인증 오류 $errorCode")
+                withContext(Main){
+                    progressOFF()
+                    if(refreshFailed){
+                        when(errorCode){
+                            401 -> showDialog("인증 오류", "인증 오류 $errorCode")
+                        }
+                    } else{
+                        moveToMainActivity()
                     }
-                } else{
-                    moveToMainActivity()
                 }
+            } else {
+                moveToMainActivity()
             }
         }
     }

@@ -60,7 +60,7 @@ class ProfileFragment(val user: User) : Fragment() {
         val userNickNameTextView = layout.findViewById<TextView>(R.id.profile_nickname)
         val userProfileImageView = layout.findViewById<ImageView>(R.id.profile_image_view)
 
-        userIDTextView.text = user.userName
+        userIDTextView.text = user.email
         userNickNameTextView.text = user.nickname
         if(user.profileImage != null){
             userProfileImageView.setImageBitmap(user.profileImage!!)
