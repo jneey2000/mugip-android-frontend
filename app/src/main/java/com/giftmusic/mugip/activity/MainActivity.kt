@@ -62,13 +62,12 @@ import com.giftmusic.mugip.ui.SearchUserDialog
 class MainActivity : BaseActivity(), CoroutineScope,
     OnMapReadyCallback, ActivityCompat.OnRequestPermissionsResultCallback, GoogleMap.OnMarkerClickListener {
     private lateinit var job: Job
-    private lateinit var userNameTextView : TextView
-    private lateinit var userProfileImageView: ImageView
     private var user : User? = null
 
     private lateinit var openProfileActivityButton : ImageView
     private lateinit var openPlayListActivityButton : ImageView
     private lateinit var openMapActivityButton : ImageView
+    private lateinit var openPostActivityButton : ImageView
     private val REQUEST_CODE = 1001
     private val otherUsers = ArrayList<OtherUserOnMap>() // 다른 사용자를 담기 위한 배열
     private val otherUserMarkers = ArrayList<MarkerOptions>() // 다른 사용자의 마커를 담기 위한 배열
@@ -131,6 +130,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
         openProfileActivityButton = findViewById(R.id.ic_profile)
         openPlayListActivityButton = findViewById(R.id.ic_playlist)
         openMapActivityButton = findViewById(R.id.center_button)
+        openPostActivityButton = findViewById(R.id.post_button)
         openProfileActivityButton.setOnClickListener {
 
         }
@@ -140,6 +140,11 @@ class MainActivity : BaseActivity(), CoroutineScope,
         }
         openMapActivityButton.setOnClickListener {
 
+        }
+
+        openPostActivityButton.setOnClickListener {
+            val activity = Intent(this, UploadActivity::class.java)
+            startActivity(activity)
         }
         openMapActivityButton.isSelected = true
         openPlayListActivityButton.isSelected = false
@@ -471,7 +476,8 @@ class MainActivity : BaseActivity(), CoroutineScope,
                 }
             }
         }
-
     }
+
+
 
 }
