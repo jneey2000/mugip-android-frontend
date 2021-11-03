@@ -413,10 +413,12 @@ class MainActivity : BaseActivity(), CoroutineScope,
         } else {
             val task = fusedLocationProviderClient.lastLocation
             task.addOnSuccessListener {
-                currentLocation = it
-                val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
-                map.moveCamera(CameraUpdateFactory.newLatLng(latLng))
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
+                if(it != null){
+                    currentLocation = it
+                    val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
+                    map.moveCamera(CameraUpdateFactory.newLatLng(latLng))
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
+                }
             }
         }
     }
