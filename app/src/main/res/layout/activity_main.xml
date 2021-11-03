@@ -29,8 +29,8 @@
         <EditText
             android:id="@+id/user_search_edittext"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:layout_height="match_parent"
             android:background="@drawable/round_corner_search_bar"
             android:drawableEnd="@drawable/search_bar_drawable_size"
             android:paddingHorizontal="15dp"
@@ -42,11 +42,12 @@
             android:layout_width="40dp"
             android:layout_marginStart="10dp"
             android:layout_height="match_parent">
+
             <ImageView
                 android:id="@+id/notification_button_main"
                 android:layout_width="40dp"
-                android:layout_marginStart="10dp"
                 android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
                 android:src="@drawable/notification_icon" />
 
             <TextView
@@ -231,4 +232,24 @@
             android:layout_margin="15dp"
             />
     </LinearLayout>
+    <LinearLayout
+        android:layout_below="@id/main_activity_top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="60dp"
+        android:layout_alignParentStart="true"
+        android:orientation="horizontal">
+
+        <!-- 검색 결과 recycle view -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/search_user_result"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            />
+
+    </LinearLayout>
+
 </RelativeLayout>

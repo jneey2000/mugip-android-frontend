@@ -46,6 +46,8 @@ import java.net.URL
 import kotlin.coroutines.CoroutineContext
 import com.google.gson.reflect.TypeToken.getArray
 import android.graphics.drawable.ColorDrawable
+import android.text.Editable
+import android.text.TextWatcher
 
 import android.widget.AdapterView
 
@@ -54,6 +56,8 @@ import android.widget.SimpleAdapter
 import android.view.LayoutInflater
 import android.view.WindowManager
 import android.widget.AdapterView.OnItemClickListener
+import androidx.core.widget.addTextChangedListener
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.giftmusic.mugip.adapter.SearchUserListViewAdapter
 import com.giftmusic.mugip.ui.SearchUserDialog
@@ -74,6 +78,9 @@ class MainActivity : BaseActivity(), CoroutineScope,
     private lateinit var map : GoogleMap // 구글 지도 객체
     private lateinit var currentLocation : Location // 현재 위치 객체
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
+    private lateinit var searchEditText : EditText
+    private lateinit var searchResultView : RecyclerView
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
@@ -108,12 +115,28 @@ class MainActivity : BaseActivity(), CoroutineScope,
         selectCategoryShowerButton.setOnClickListener(CategoryButtonListener())
 
         // 검색창 event listener
-        val searchEditText = findViewById<EditText>(R.id.user_search_edittext)
+        searchEditText = findViewById(R.id.user_search_edittext)
+        searchEditText.addTextChangedListener(
+            object : TextWatcher {
+                override fun afterTextChanged(p0: Editable?) {
+
+                }
+
+                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
+                }
+
+                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                    getSearchResult(p0.toString())
+                }
+            }
+        )
         searchEditText.setOnEditorActionListener { v, actionId, event ->
             if(actionId == EditorInfo.IME_ACTION_DONE){
                 getSearchResult((v as EditText).text.toString())
                 val inputMethodManager = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                 inputMethodManager.hideSoftInputFromWindow(searchEditText.windowToken, 0)
+                searchEditText.clearFocus()
                 true
             } else {
                 false
@@ -125,6 +148,10 @@ class MainActivity : BaseActivity(), CoroutineScope,
             val intent = Intent(this, AlarmActivity::class.java)
             startActivity(intent)
         }
+
+        searchResultView = findViewById(R.id.search_user_result)
+        searchResultView.layoutManager = LinearLayoutManager(this@MainActivity, RecyclerView.VERTICAL, false)
+        searchResultView.adapter = SearchUserListViewAdapter(arrayListOf())
 
         // 하단 메뉴 버튼
         openProfileActivityButton = findViewById(R.id.ic_profile)
@@ -210,18 +237,20 @@ class MainActivity : BaseActivity(), CoroutineScope,
             withContext(Dispatchers.Main){
                 progressOFF()
                 if(!searchUserFailed){
-                    Log.d("result size", searchResult.size.toString())
-                    val adapter = SearchUserListViewAdapter(searchResult)
-                    val customDialog = SearchUserDialog(this@MainActivity, adapter)
-
-                    val layoutParams = WindowManager.LayoutParams()
-                    layoutParams.copyFrom(customDialog.window!!.attributes)
-                    layoutParams.width = 1200
-                    layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
-
-                    customDialog.show()
-                    val window = customDialog.window
-                    window!!.attributes = layoutParams
+                    Log.d("result", searchResult.toString())
+                    when {
+                        searchEditText.text.toString().isEmpty() -> {
+                            searchResultView.visibility = View.GONE
+                        }
+                        searchResult.isEmpty() -> {
+                            searchResultView.adapter = SearchUserListViewAdapter(arrayListOf(SearchUserItem(-1, "검색 결과가 존재하지 않습니다", "")))
+                            searchResultView.visibility = View.VISIBLE
+                        }
+                        else -> {
+                            searchResultView.adapter = SearchUserListViewAdapter(searchResult)
+                            searchResultView.visibility = View.VISIBLE
+                        }
+                    }
 
                 } else if(errorMessage.isNotEmpty()){
                     showFailDialog("사용자 검색 실패", errorMessage)
