@@ -170,7 +170,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
         }
 
         openPostActivityButton.setOnClickListener {
-            val activity = Intent(this, UploadActivity::class.java)
+            val activity = Intent(this, SearchMusicActivity::class.java)
             startActivity(activity)
         }
         openMapActivityButton.isSelected = true
@@ -380,32 +380,6 @@ class MainActivity : BaseActivity(), CoroutineScope,
                 }
             }
         }
-    }
-
-    private fun showFailDialog(title: String, errorMessage: String){
-        val dialogBuilder = AlertDialog.Builder(this)
-            .setTitle(title)
-            .setMessage(errorMessage)
-            .setPositiveButton("뒤로 가기") { _: DialogInterface, _: Int ->
-                when(errorMessage){
-                    "403"->{
-                        val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
-                        val editor = prefManager.edit()
-                        editor.putString("access_token", null).apply()
-                        editor.putString("refresh_token", null).apply()
-                        moveToLoginActivity()
-                    }
-                }
-            }
-        val dialog = dialogBuilder.create()
-        dialog.show()
-    }
-
-    private fun moveToLoginActivity(){
-        val intent = Intent(this, LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NO_HISTORY
-        startActivity(intent)
-        finish()
     }
 
     // 지도 준비 후 동작

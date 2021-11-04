@@ -1,272 +1,291 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/layout_profile"
     android:background="#E8E6FF"
+    android:paddingHorizontal="20dp"
     tools:context=".activity.MainActivity">
 
 
-    <LinearLayout
+    <!-- 상단 뒤로 및 알람 버튼 -->
+    <RelativeLayout
+        android:id="@+id/upload_top_bar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/upload_fragment_action_bar"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginHorizontal="15dp"
-        android:orientation="vertical">
+        android:layout_height="40dp"
+        android:layout_marginVertical="20dp"
+        android:orientation="horizontal">
 
-        <!-- 상단 뒤로 및 알람 버튼 -->
+        <ImageView
+            android:id="@+id/back_to_profile"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:src="@drawable/ic_back"
+            />
+
         <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginVertical="20dp"
-            android:orientation="horizontal">
-
+            android:layout_width="40dp"
+            android:layout_marginStart="10dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true">
             <ImageView
-                android:id="@+id/back_to_profile"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignParentStart="true"
-                android:src="@drawable/ic_back"
-                />
-
-            <RelativeLayout
+                android:id="@+id/notification_button_profile"
                 android:layout_width="40dp"
                 android:layout_marginStart="10dp"
                 android:layout_height="match_parent"
-                android:layout_alignParentEnd="true">
-                <ImageView
-                    android:id="@+id/notification_button_profile"
-                    android:layout_width="40dp"
-                    android:layout_marginStart="10dp"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/notification_icon" />
-
-                <TextView
-                    android:id="@+id/notification_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:scaleType="fitStart"
-                    android:layout_marginEnd="0dp"
-                    android:padding="2dp"
-                    android:background="@drawable/notification_badge"
-                    android:gravity="center"
-                    android:minWidth="17sp"
-                    android:adjustViewBounds="true"
-                    android:minHeight="17sp"
-                    android:paddingBottom="1dp"
-                    android:paddingLeft="4dp"
-                    android:paddingRight="4dp"
-                    android:text="0"
-                    android:textColor="#FF0000"
-                    android:textSize="12sp"
-                    android:visibility="visible"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentEnd="true"
-                    />
-            </RelativeLayout>
-        </RelativeLayout>
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@drawable/round_corner_search_bar"
-            android:drawableEnd="@drawable/search_bar_drawable_size"
-            android:paddingHorizontal="15dp"
-            android:layout_marginBottom="15dp"
-        />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            >
-            <ImageView
-                android:layout_width="150dp"
-                android:layout_height="match_parent"
-                android:background="@color/primary" />
-            <LinearLayout
-                android:id="@+id/music_info"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="10dp"
-                android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/music_name"
-                    android:text="노래 제목"
-                    android:textSize="25sp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/primary"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/music_artist"
-                    android:text="가수/제작자"
-                    android:textSize="20sp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="#8a80ba" />
-            </LinearLayout>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_marginTop="15dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            tools:ignore="UseSwitchCompatOrMaterialXml">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="위치"
-                android:gravity="center"
-                android:textColor="@color/primary"
-                android:textSize="18sp" />
-            <Switch
-                android:layout_marginStart="10dp"
-                android:layout_width="wrap_content"
-                android:maxWidth="60dp"
-                android:layout_height="match_parent" />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_marginTop="15dp"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:orientation="horizontal"
-            tools:ignore="UseSwitchCompatOrMaterialXml">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="태그"
-                android:gravity="center"
-                android:textColor="@color/primary"
-                android:textSize="18sp" />
+                android:src="@drawable/notification_icon" />
 
             <TextView
-                android:id="@+id/add_tag_button"
-                android:layout_width="80dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="10dp"
-                android:background="@drawable/button_select_category_to_upload"
-                android:text="+"
-                android:gravity="center"
-                android:textColor="@color/primary"
-                android:textSize="16sp"
-            />
-        </LinearLayout>
-
-        <ScrollView
-            android:id="@+id/tag_scroll_view"
-            android:fadeScrollbars="false"
-            android:scrollbarStyle="insideInset"
-            android:layout_width="wrap_content"
-            android:layout_height="150dp"
-            android:layout_marginVertical="15dp"
-            android:layout_gravity="center"
-            android:background="@drawable/button_select_category_to_upload"
-            android:scrollbarThumbHorizontal="@color/secondary"
-            android:scrollbarTrackHorizontal="@color/primary"
-            android:scrollbarSize="5dp"
-            android:overScrollMode="never"
-            android:paddingVertical="10dp"
-            android:visibility="gone"
-            >
-            <GridLayout
+                android:id="@+id/notification_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_gravity="center"
-                android:columnCount="3"
-                android:useDefaultMargins="true"
-                android:layout_marginHorizontal="20dp"
-                android:paddingTop="30dp"
-                >
-                <Button
-                    android:id="@+id/select_category_exercise"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/top_button_round_background"
-                    android:layout_marginStart="5dp"
-                    android:text="💪 운동"
-                    android:textColor="@color/white"
-                    />
+                android:scaleType="fitStart"
+                android:layout_marginEnd="0dp"
+                android:padding="2dp"
+                android:background="@drawable/notification_badge"
+                android:gravity="center"
+                android:minWidth="17sp"
+                android:adjustViewBounds="true"
+                android:minHeight="17sp"
+                android:paddingBottom="1dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:text="0"
+                android:textColor="#FF0000"
+                android:textSize="12sp"
+                android:visibility="visible"
+                android:layout_gravity="center_horizontal"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                />
+        </RelativeLayout>
+    </RelativeLayout>
 
-                <Button
-                    android:id="@+id/select_category_work"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/top_button_round_background"
-                    android:layout_marginStart="5dp"
-                    android:text="💻 업무"
-                    android:textColor="@color/white"
-                    />
 
-                <Button
-                    android:id="@+id/select_category_reading"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/top_button_round_background"
-                    android:layout_marginStart="5dp"
-                    android:text="📘 독서"
-                    android:textColor="@color/white"
-                    />
+    <EditText
+        android:layout_below="@id/upload_top_bar"
+        android:id="@+id/song_search_bar"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@drawable/round_corner_search_bar"
+        android:drawableEnd="@drawable/search_bar_drawable_size"
+        android:paddingHorizontal="15dp"
+        android:layout_marginBottom="15dp"
+    />
 
-                <Button
-                    android:id="@+id/select_category_drive"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/top_button_round_background"
-                    android:layout_marginStart="5dp"
-                    android:text="🚗 드라이브"
-                    android:textColor="@color/white"
-                    />
+    <LinearLayout
+        android:id="@+id/song_info"
+        android:layout_below="@id/song_search_bar"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        >
+        <ImageView
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:background="@color/primary" />
+        <LinearLayout
+            android:id="@+id/music_info"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/music_name"
+                android:text="노래 제목"
+                android:textSize="25sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/primary"
+                android:textStyle="bold" />
 
-                <Button
-                    android:id="@+id/select_category_trip"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/top_button_round_background"
-                    android:layout_marginStart="5dp"
-                    android:text="✈️ 여행"
-                    android:textColor="@color/white"
-                    />
+            <TextView
+                android:id="@+id/music_artist"
+                android:text="가수/제작자"
+                android:textSize="20sp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#8a80ba" />
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/song_share_location_layout"
+        android:layout_below="@id/song_info"
+        android:layout_marginTop="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        tools:ignore="UseSwitchCompatOrMaterialXml">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="위치"
+            android:gravity="center"
+            android:textColor="@color/primary"
+            android:textSize="18sp" />
+        <Switch
+            android:layout_marginStart="10dp"
+            android:layout_width="wrap_content"
+            android:maxWidth="60dp"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/song_tag_layout"
+        android:layout_below="@id/song_share_location_layout"
+        android:layout_marginTop="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        tools:ignore="UseSwitchCompatOrMaterialXml">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="태그"
+            android:gravity="center"
+            android:textColor="@color/primary"
+            android:textSize="18sp" />
 
-                <Button
-                    android:id="@+id/select_category_programming"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/top_button_round_background"
-                    android:layout_marginStart="5dp"
-                    android:text="⌨️ 코딩"
-                    android:textColor="@color/white"
-                    />
+        <TextView
+            android:id="@+id/add_tag_button"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/button_select_category_to_upload"
+            android:text="+"
+            android:gravity="center"
+            android:textColor="@color/primary"
+            android:textSize="16sp"
+        />
+    </LinearLayout>
 
-                <Button
-                    android:id="@+id/select_category_shower"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/top_button_round_background"
-                    android:layout_marginStart="5dp"
-                    android:text="🛁 샤워"
-                    android:textColor="@color/white"
-                    />
+    <ScrollView
+        android:layout_below="@id/song_tag_layout"
+        android:id="@+id/tag_scroll_view"
+        android:fadeScrollbars="false"
+        android:scrollbarStyle="insideInset"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_marginVertical="15dp"
+        android:layout_gravity="center"
+        android:background="@drawable/button_select_category_to_upload"
+        android:scrollbarThumbHorizontal="@color/secondary"
+        android:scrollbarTrackHorizontal="@color/primary"
+        android:scrollbarSize="5dp"
+        android:overScrollMode="never"
+        android:paddingVertical="10dp"
+        android:visibility="gone"
+        >
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center"
+            android:columnCount="3"
+            android:useDefaultMargins="true"
+            android:layout_marginHorizontal="20dp"
+            android:paddingTop="30dp"
+            >
+            <Button
+                android:id="@+id/select_category_exercise"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/top_button_round_background"
+                android:layout_marginStart="5dp"
+                android:text="💪 운동"
+                android:textColor="@color/white"
+                />
 
-            </GridLayout>
-        </ScrollView>
+            <Button
+                android:id="@+id/select_category_work"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/top_button_round_background"
+                android:layout_marginStart="5dp"
+                android:text="💻 업무"
+                android:textColor="@color/white"
+                />
 
+            <Button
+                android:id="@+id/select_category_reading"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/top_button_round_background"
+                android:layout_marginStart="5dp"
+                android:text="📘 독서"
+                android:textColor="@color/white"
+                />
+
+            <Button
+                android:id="@+id/select_category_drive"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/top_button_round_background"
+                android:layout_marginStart="5dp"
+                android:text="🚗 드라이브"
+                android:textColor="@color/white"
+                />
+
+            <Button
+                android:id="@+id/select_category_trip"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/top_button_round_background"
+                android:layout_marginStart="5dp"
+                android:text="✈️ 여행"
+                android:textColor="@color/white"
+                />
+
+            <Button
+                android:id="@+id/select_category_programming"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/top_button_round_background"
+                android:layout_marginStart="5dp"
+                android:text="⌨️ 코딩"
+                android:textColor="@color/white"
+                />
+
+            <Button
+                android:id="@+id/select_category_shower"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@drawable/top_button_round_background"
+                android:layout_marginStart="5dp"
+                android:text="🛁 샤워"
+                android:textColor="@color/white"
+                />
+
+        </GridLayout>
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_below="@id/tag_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        >
         <Button
             android:layout_width="80dp"
             android:layout_height="40dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginVertical="10dp"
             android:text="확인"
             android:textColor="@color/primary"
             android:textAlignment="center"
             android:background="@drawable/button_select_category_to_upload"
             android:layout_gravity="center"
-        />
+            />
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_below="@id/song_search_bar"
+        android:id="@+id/search_song_result"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        />
+
+</RelativeLayout>
