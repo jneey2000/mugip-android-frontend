@@ -25,8 +25,16 @@
             android:layout_alignParentStart="true"
             android:src="@drawable/ic_back"
             />
-
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toEndOf="@id/back_to_profile"
+            android:layout_toStartOf="@id/notification_button"
+            android:text="게시물 업로드"
+            android:textColor="#473493"
+            android:gravity="center"/>
         <RelativeLayout
+            android:id="@+id/notification_button"
             android:layout_width="40dp"
             android:layout_marginStart="10dp"
             android:layout_height="match_parent"
@@ -65,24 +73,14 @@
     </RelativeLayout>
 
 
-    <EditText
-        android:layout_below="@id/upload_top_bar"
-        android:id="@+id/song_search_bar"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="@drawable/round_corner_search_bar"
-        android:drawableEnd="@drawable/search_bar_drawable_size"
-        android:paddingHorizontal="15dp"
-        android:layout_marginBottom="15dp"
-    />
-
     <LinearLayout
         android:id="@+id/song_info"
-        android:layout_below="@id/song_search_bar"
+        android:layout_below="@id/upload_top_bar"
         android:layout_width="match_parent"
         android:layout_height="150dp"
         >
         <ImageView
+            android:id="@+id/music_thumbnail"
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:background="@color/primary" />
@@ -127,7 +125,8 @@
             android:gravity="center"
             android:textColor="@color/primary"
             android:textSize="18sp" />
-        <Switch
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/share_location_switch"
             android:layout_marginStart="10dp"
             android:layout_width="wrap_content"
             android:maxWidth="60dp"
@@ -270,6 +269,7 @@
         android:gravity="center"
         >
         <Button
+            android:id="@+id/upload_button"
             android:layout_width="80dp"
             android:layout_height="40dp"
             android:layout_marginVertical="10dp"
@@ -280,12 +280,4 @@
             android:layout_gravity="center"
             />
     </LinearLayout>
-    <androidx.recyclerview.widget.RecyclerView
-        android:layout_below="@id/song_search_bar"
-        android:id="@+id/search_song_result"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        />
-
 </RelativeLayout>

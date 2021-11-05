@@ -16,9 +16,7 @@ import com.giftmusic.mugip.BaseActivity
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.adapter.SearchSongListViewAdapter
-import com.giftmusic.mugip.adapter.SearchUserListViewAdapter
 import com.giftmusic.mugip.models.response.SearchMusicItem
-import com.giftmusic.mugip.models.response.SearchUserItem
 import com.google.gson.Gson
 import kotlinx.coroutines.*
 import org.json.JSONObject
@@ -44,7 +42,7 @@ class SearchMusicActivity : BaseActivity(), CoroutineScope {
         searchEditText = findViewById(R.id.song_search_bar)
         searchResultView = findViewById(R.id.search_song_result)
         searchResultView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
-        searchResultView.adapter = SearchUserListViewAdapter(arrayListOf())
+        searchResultView.adapter = SearchSongListViewAdapter(this, arrayListOf())
 
         // 검색창 event listener
         searchEditText.addTextChangedListener(
@@ -105,7 +103,7 @@ class SearchMusicActivity : BaseActivity(), CoroutineScope {
                             for (i in 0 until responseJson.getJSONArray("results").length()) {
                                 val objects: JSONObject = responseJson.getJSONArray("results").getJSONObject(i)
                                 val thumbnailURL = URL(objects.getJSONObject("thumbnail").getString("url"))
-                                var thumbnailBitmap : Bitmap? = null
+                                var thumbnailBitmap : Bitmap?
 
                                 try {
                                     val connection = thumbnailURL.openConnection()
@@ -120,7 +118,7 @@ class SearchMusicActivity : BaseActivity(), CoroutineScope {
 
                                 searchResult.add(
                                     SearchMusicItem(
-                                        objects.getString("title"), objects.getString("artist"), thumbnailBitmap
+                                        objects.getString("title"), objects.getString("artist"), objects.getJSONObject("thumbnail").getString("url"), thumbnailBitmap
                                     )
                                 )
                             }
@@ -149,7 +147,7 @@ class SearchMusicActivity : BaseActivity(), CoroutineScope {
                             searchResultView.visibility = View.GONE
                         }
                         else -> {
-                            searchResultView.adapter = SearchSongListViewAdapter(searchResult)
+                            searchResultView.adapter = SearchSongListViewAdapter(this@SearchMusicActivity, searchResult)
                             searchResultView.visibility = View.VISIBLE
                         }
                     }

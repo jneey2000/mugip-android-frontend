@@ -6,5 +6,6 @@ import android.graphics.Bitmap
 data class SearchMusicItem(
     val title : String,
     val artist : String,
+    val thumbnailURL : String?,
     val thumbnail : Bitmap?
 )
