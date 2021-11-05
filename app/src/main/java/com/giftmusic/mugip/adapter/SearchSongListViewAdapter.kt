@@ -10,8 +10,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.models.response.SearchMusicItem
 import com.giftmusic.mugip.models.response.SearchUserItem
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
 
-class SearchSongListViewAdapter(private val mData : ArrayList<SearchMusicItem>) : RecyclerView.Adapter<SearchSongListViewAdapter.ItemViewHolder>() {
+class SearchSongListViewAdapter(private val mData : ArrayList<SearchMusicItem>) : RecyclerView.Adapter<SearchSongListViewAdapter.ItemViewHolder>(), CoroutineScope {
+    private lateinit var job : Job
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.IO + job
+
     inner class ItemViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!){
         private val musicThumbnail : ImageView = itemView!!.findViewById(R.id.song_thumbnail) as ImageView
         private val musicTitle : TextView = itemView!!.findViewById(R.id.song_title) as TextView
@@ -21,6 +29,9 @@ class SearchSongListViewAdapter(private val mData : ArrayList<SearchMusicItem>) 
         fun bind(item: SearchMusicItem){
             musicTitle.text = item.title
             musicArtist.text = item.artist
+            if(item.thumbnail != null){
+                musicThumbnail.setImageBitmap(item.thumbnail)
+            }
         }
     }
 

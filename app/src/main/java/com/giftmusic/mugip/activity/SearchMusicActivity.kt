@@ -1,5 +1,7 @@
 package com.giftmusic.mugip.activity
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -58,7 +60,7 @@ class SearchMusicActivity : BaseActivity(), CoroutineScope {
                     timer = object : CountDownTimer(1000, 1500) {
                         override fun onTick(millisUntilFinished: Long) {}
                         override fun onFinish() {
-                            getSearchResult(editable.toString())
+                            getSearchResult("*${editable.toString()}*")
                         }
                     }.start()
                 }
@@ -102,9 +104,23 @@ class SearchMusicActivity : BaseActivity(), CoroutineScope {
                             val responseJson = JSONObject(returnBody.trim())
                             for (i in 0 until responseJson.getJSONArray("results").length()) {
                                 val objects: JSONObject = responseJson.getJSONArray("results").getJSONObject(i)
+                                val thumbnailURL = URL(objects.getJSONObject("thumbnail").getString("url"))
+                                var thumbnailBitmap : Bitmap? = null
+
+                                try {
+                                    val connection = thumbnailURL.openConnection()
+                                    connection.doInput = true
+                                    connection.connect()
+
+                                    val thumbnailInputStream = connection.getInputStream()
+                                    thumbnailBitmap = BitmapFactory.decodeStream(thumbnailInputStream)
+                                } catch (e : java.lang.Exception){
+                                    thumbnailBitmap = null
+                                }
+
                                 searchResult.add(
                                     SearchMusicItem(
-                                        objects.getString("title"), objects.getString("artist"), objects.getJSONObject("thumbnail").getString("url")
+                                        objects.getString("title"), objects.getString("artist"), thumbnailBitmap
                                     )
                                 )
                             }
