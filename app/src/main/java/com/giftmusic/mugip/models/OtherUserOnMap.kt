@@ -4,6 +4,7 @@ import com.google.android.gms.maps.model.LatLng
 
 data class OtherUserOnMap(
     val userID : Int,
+    val postID : Int,
     val title: String,
     val artist : String,
     val thumbnail : String,

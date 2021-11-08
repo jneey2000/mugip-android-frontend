@@ -75,7 +75,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
     private lateinit var openPostActivityButton : ImageView
     private val REQUEST_CODE = 1001
     private val otherUsers = ArrayList<OtherUserOnMap>() // 다른 사용자를 담기 위한 배열
-    private val otherUserMarkers = ArrayList<MarkerOptions>() // 다른 사용자의 마커를 담기 위한 배열
+    private val otherUserMarkers = HashMap<MarkerOptions, Int>() // 다른 사용자의 마커를 담기 위한 배열
     private lateinit var map : GoogleMap // 구글 지도 객체
     private lateinit var currentLocation : Location // 현재 위치 객체
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -429,7 +429,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
     // 다른 사용자의 위치 marker
     private fun addMarker(){
         otherUserMarkers.clear()
-        val refreshOtherUser = launch {
+        launch {
             otherUsers.map {
                 var bitmap : Bitmap
                 try{
@@ -451,11 +451,11 @@ class MainActivity : BaseActivity(), CoroutineScope,
                 markerOptions.position(it.location)
                 markerOptions.draggable(true)
                 markerOptions.icon(BitmapDescriptorFactory.fromBitmap(cropCircleImage(bitmap)!!))
-                otherUserMarkers.add(markerOptions)
+                otherUserMarkers.put(markerOptions, it.postID)
             }
             withContext(Dispatchers.Main){
-                otherUserMarkers.map {
-                    map.addMarker(it)
+                for(i in otherUserMarkers.keys){
+                    map.addMarker(i)
                 }
             }
         }
@@ -527,7 +527,9 @@ class MainActivity : BaseActivity(), CoroutineScope,
                                 val objects: JSONObject = responseJson.getJSONArray("results").getJSONObject(i)
                                 otherUsers.add(
                                     OtherUserOnMap(
-                                    objects.getInt("user_id"), objects.getString("title"),
+                                    objects.getInt("user_id"),
+                                    objects.getInt("id"),
+                                    objects.getString("title"),
                                     objects.getString("artist"), objects.getString("thumbnailURL"),
                                     objects.getString("tag"),
                                     LatLng(objects.getDouble("latitude"), objects.getDouble("longitude"))
