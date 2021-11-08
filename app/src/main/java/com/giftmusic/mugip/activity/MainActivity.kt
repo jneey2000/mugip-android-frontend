@@ -61,6 +61,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.giftmusic.mugip.adapter.SearchUserListViewAdapter
 import com.giftmusic.mugip.ui.SearchUserDialog
+import com.giftmusic.mugip.ui.cropCircleImage
 
 
 class MainActivity : BaseActivity(), CoroutineScope,
@@ -399,9 +400,8 @@ class MainActivity : BaseActivity(), CoroutineScope,
         // 지도 위치가 이동했을 때
         map.setOnCameraIdleListener {
             val visibleRegion = map.projection.visibleRegion.latLngBounds
-            Log.d("map location(northeast)", "Location: (${visibleRegion.northeast.latitude}, ${visibleRegion.northeast.longitude})")
-            Log.d("map location(southwest)", "Location: (${visibleRegion.southwest.latitude}, ${visibleRegion.southwest.longitude})")
             // 마커 업데이트 코드 삽입
+            refreshPost(visibleRegion.southwest, visibleRegion.northeast)
         }
     }
 
@@ -429,17 +429,18 @@ class MainActivity : BaseActivity(), CoroutineScope,
     // 다른 사용자의 위치 marker
     private fun addMarker(){
         otherUserMarkers.clear()
-        val refreshOtherUser = GlobalScope.launch {
+        val refreshOtherUser = launch {
             otherUsers.map {
                 var bitmap : Bitmap
                 try{
-                    val url = URL(it.imageUrl)
+                    val url = URL(it.thumbnail)
                     val conn = url.openConnection() as HttpURLConnection
                     conn.doInput = true // 서버로 부터 응답 수신
                     conn.connect()
 
                     val inputStream: InputStream = conn.inputStream // InputStream 값 가져오기
                     bitmap = BitmapFactory.decodeStream(inputStream)
+                    bitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, false)
                 } catch (e: FileNotFoundException){
                     val markerImage = ResourcesCompat.getDrawable(resources,
                         R.drawable.ic_profile, null) as BitmapDrawable
@@ -449,15 +450,14 @@ class MainActivity : BaseActivity(), CoroutineScope,
                 val markerOptions = MarkerOptions()
                 markerOptions.position(it.location)
                 markerOptions.draggable(true)
-                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(cropCircleImage(bitmap)!!))
                 otherUserMarkers.add(markerOptions)
             }
-        }
-        runBlocking {
-            refreshOtherUser.join()
-        }
-        otherUserMarkers.map {
-            map.addMarker(it)
+            withContext(Dispatchers.Main){
+                otherUserMarkers.map {
+                    map.addMarker(it)
+                }
+            }
         }
     }
 
@@ -483,6 +483,75 @@ class MainActivity : BaseActivity(), CoroutineScope,
         }
     }
 
+    private fun refreshPost(mapBottomLeft: LatLng, mapTopRight: LatLng){
+        progressOn("다른 사용자의 게시물찾는 중...")
+        var refreshFailed = true
+        var errorMessage = ""
+        val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
 
+        launch {
+            val url = URL(BuildConfig.server_url + "/search/post")
+            val conn = url.openConnection() as HttpURLConnection
+            try {
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.setRequestProperty("Accept", "application/json")
+                conn.setRequestProperty("Authorization", "Basic ${prefManager.getString("access_token", "")}")
+                conn.doInput = true
+                conn.doOutput = true
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
 
+                val requestJson = HashMap<String, Any>()
+                requestJson["mapTopRightLatitude"] = mapTopRight.latitude
+                requestJson["mapTopRightLongitude"] = mapTopRight.longitude
+                requestJson["mapBottomLeftLatitude"] = mapBottomLeft.latitude
+                requestJson["mapBottomLeftLongitude"] = mapBottomLeft.longitude
+
+                conn.outputStream.use { os ->
+                    val input: ByteArray =
+                        Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                    os.write(input, 0, input.size)
+                    os.flush()
+                }
+
+                when(conn.responseCode){
+                    200 -> {
+                        val inputStream = conn.inputStream
+                        if(inputStream != null){
+                            val returnBody = conn.inputStream.bufferedReader().use(
+                                BufferedReader::readText)
+                            val responseJson = JSONObject(returnBody.trim())
+                            otherUsers.clear()
+                            for (i in 0 until responseJson.getJSONArray("results").length()) {
+                                val objects: JSONObject = responseJson.getJSONArray("results").getJSONObject(i)
+                                otherUsers.add(
+                                    OtherUserOnMap(
+                                    objects.getInt("user_id"), objects.getString("title"),
+                                    objects.getString("artist"), objects.getString("thumbnailURL"),
+                                    objects.getString("tag"),
+                                    LatLng(objects.getDouble("latitude"), objects.getDouble("longitude"))
+                                ))
+                            }
+                            addMarker()
+                        }
+                    }
+                    else -> errorMessage = conn.responseCode.toString()
+                }
+            }
+            catch (e : SocketTimeoutException){
+                errorMessage = "연결 시간 초과 오류"
+            }
+            catch (e : Exception){
+                Log.e("refresh post error", e.toString())
+                Log.e("refresh post", e.javaClass.kotlin.toString())
+            }
+            finally {
+                conn.disconnect()
+            }
+            withContext(Dispatchers.Main){
+                progressOFF()
+            }
+        }
+    }
 }

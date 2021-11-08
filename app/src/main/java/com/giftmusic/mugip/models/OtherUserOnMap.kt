@@ -2,7 +2,11 @@ package com.giftmusic.mugip.models
 
 import com.google.android.gms.maps.model.LatLng
 
-class OtherUserOnMap(imageUrl: String, location: LatLng) {
-    val imageUrl : String = imageUrl
-    val location : LatLng = location
-}
+data class OtherUserOnMap(
+    val userID : Int,
+    val title: String,
+    val artist : String,
+    val thumbnail : String,
+    val tag: String,
+    val location : LatLng,
+)
