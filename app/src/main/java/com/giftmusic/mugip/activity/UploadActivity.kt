@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
@@ -34,14 +36,15 @@ class UploadActivity : BaseActivity(), CoroutineScope {
     private lateinit var job : Job
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var sharedSwitchChecked = false
+    private lateinit var locationManager: LocationManager
+    private lateinit var location : Location
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_upload)
         job = Job()
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         val addTagButton = findViewById<TextView>(R.id.add_tag_button)
         val addTagScrollView = findViewById<ScrollView>(R.id.tag_scroll_view)
         val uploadButton = findViewById<Button>(R.id.upload_button)
@@ -99,8 +102,10 @@ class UploadActivity : BaseActivity(), CoroutineScope {
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
             ) {
                 return@setOnClickListener
-            }
-            fusedLocationClient.lastLocation.addOnSuccessListener { currentLocation ->
+            } else{
+                location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)!!
+
+
                 progressOn("업로드 하는 중...")
                 var uploadFailed = true
                 var errorMessage = ""
@@ -123,8 +128,8 @@ class UploadActivity : BaseActivity(), CoroutineScope {
                         requestJson["title"] = intent.getStringExtra("title").toString()
                         requestJson["artist"] = intent.getStringExtra("artist").toString()
                         requestJson["thumbnailURL"] = intent.getStringExtra("thumbnailURL").toString()
-                        requestJson["latitude"] = currentLocation.latitude
-                        requestJson["longitude"] = currentLocation.longitude
+                        requestJson["latitude"] = location.latitude
+                        requestJson["longitude"] = location.longitude
                         requestJson["shareLocation"] = sharedSwitchChecked
                         requestJson["tag"] = addTagButton.text.substring(2, addTagButton.text.length).trim()
 
@@ -154,8 +159,8 @@ class UploadActivity : BaseActivity(), CoroutineScope {
                         errorMessage = "연결 시간 초과 오류"
                     }
                     catch (e : Exception){
-                        Log.e("fetch search result error", e.toString())
-                        Log.e("fetch search result error", e.javaClass.kotlin.toString())
+                        Log.e("fetch post error", e.toString())
+                        Log.e("fetch post", e.javaClass.kotlin.toString())
                     }
                     finally {
                         conn.disconnect()
