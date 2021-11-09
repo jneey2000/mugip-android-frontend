@@ -373,6 +373,8 @@ class LoginActivity : BaseActivity(), CoroutineScope {
                                 loginFailed = false
                                 editor.putString("access_token", responseJson["access_token"].toString()).apply()
                                 editor.putString("refresh_token", responseJson["refresh_token"].toString()).apply()
+                            } else{
+                                errorMessage = responseJson["message"].toString()
                             }
                         }
                     }
@@ -390,8 +392,9 @@ class LoginActivity : BaseActivity(), CoroutineScope {
             }
             withContext(Main){
                 progressOFF()
+                Log.d("loginFailed", loginFailed.toString())
                 if(errorMessage.isNotEmpty()){
-                    showDialog("인증 오류", "인증 오류 $errorMessage")
+                    showFailDialog("인증 오류", errorMessage)
                 } else if(!loginFailed){
                     moveToMainActivity()
                 }
