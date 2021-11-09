@@ -160,7 +160,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
         openMapActivityButton = findViewById(R.id.center_button)
         openPostActivityButton = findViewById(R.id.post_button)
         openProfileActivityButton.setOnClickListener {
-
+            openMyProfileActivity()
         }
 
         openPlayListActivityButton.setOnClickListener {
@@ -535,7 +535,6 @@ class MainActivity : BaseActivity(), CoroutineScope,
                                     LatLng(objects.getDouble("latitude"), objects.getDouble("longitude"))
                                 ))
                             }
-                            addMarker()
                         }
                     }
                     else -> errorMessage = conn.responseCode.toString()
@@ -552,8 +551,14 @@ class MainActivity : BaseActivity(), CoroutineScope,
                 conn.disconnect()
             }
             withContext(Dispatchers.Main){
+                addMarker()
                 progressOFF()
             }
         }
+    }
+
+    private fun openMyProfileActivity(){
+        val intent = Intent(this, ProfileActivity::class.java)
+        startActivity(intent)
     }
 }

@@ -20,21 +20,24 @@
             />
         <activity
             android:name=".activity.SignUpOauthActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/Theme.MugipApp" />
         <activity
             android:name=".activity.SignupActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/Theme.MugipApp" />
         <activity
             android:name=".activity.AlarmActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/Theme.MugipApp" />
         <activity
             android:name=".activity.UploadActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/Theme.MugipApp" />
-
+        <activity
+            android:name=".activity.ProfileActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MugipApp" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${mapKey}" />
