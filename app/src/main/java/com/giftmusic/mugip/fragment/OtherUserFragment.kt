@@ -51,7 +51,7 @@ class OtherUserFragment : Fragment() {
 
         viewPager2 = layout.findViewById(R.id.other_user_tab_pager)
         tabLayout = layout.findViewById(R.id.other_user_tab_layout)
-        viewPager2.adapter = MyProfileFragmentStateAdapter(this.requireActivity())
+        viewPager2.adapter = MyProfileFragmentStateAdapter(this.requireActivity(), ArrayList(), ArrayList())
         TabLayoutMediator(tabLayout, viewPager2){
                 tab, position -> tab.text = tabTextList[position]
         }.attach()

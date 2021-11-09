@@ -13,8 +13,8 @@ class DiggingFeedFragmentStateAdapter(fragmentActivity: FragmentActivity) : Frag
 
     override fun createFragment(position: Int): Fragment {
         return when(position){
-            0 -> HistoryFragment()
-            else -> PlaylistFragment()
+            0 -> HistoryFragment(ArrayList())
+            else -> PlaylistFragment(ArrayList())
         }
     }
 }

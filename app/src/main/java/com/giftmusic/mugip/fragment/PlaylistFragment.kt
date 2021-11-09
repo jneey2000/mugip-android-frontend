@@ -12,19 +12,13 @@ import com.giftmusic.mugip.adapter.PlaylistListAdapter
 import com.giftmusic.mugip.models.MusicItem
 
 
-class PlaylistFragment : Fragment() {
-    private val musicList = ArrayList<MusicItem>()
+class PlaylistFragment(private val musicList : ArrayList<MusicItem>) : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        musicList.clear()
-        musicList.add(MusicItem("https://github.com", "멸공의 횃불", "육군", "\uD83D\uDCBB 업무"))
-        musicList.add(MusicItem("https://github.com", "아미타이거", "육군", "\uD83D\uDCBB 업무"))
-        musicList.add(MusicItem("https://github.com", "전우", "육군", "\uD83D\uDCBB 업무"))
-
         return inflater.inflate(R.layout.fragment_my_playing_list, container, false)
     }
 

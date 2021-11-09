@@ -12,9 +12,7 @@ import com.giftmusic.mugip.adapter.HistoryListAdapter
 import com.giftmusic.mugip.models.MusicItem
 
 
-class HistoryFragment : Fragment() {
-    private val musicList = ArrayList<MusicItem>()
-
+class HistoryFragment(private val musicList : ArrayList<MusicItem>) : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
