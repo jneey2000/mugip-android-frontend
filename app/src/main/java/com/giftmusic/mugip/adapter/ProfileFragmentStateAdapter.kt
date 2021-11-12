@@ -7,7 +7,7 @@ import com.giftmusic.mugip.fragment.HistoryFragment
 import com.giftmusic.mugip.fragment.PlaylistFragment
 import com.giftmusic.mugip.models.MusicItem
 
-class MyProfileFragmentStateAdapter(
+class ProfileFragmentStateAdapter(
         fragmentActivity: FragmentActivity,
         private val historyList : ArrayList<MusicItem>,
         private val followList : ArrayList<MusicItem>

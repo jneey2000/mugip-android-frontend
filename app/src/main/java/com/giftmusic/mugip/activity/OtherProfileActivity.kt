@@ -14,9 +14,12 @@ import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
 import com.giftmusic.mugip.adapter.ProfileFragmentStateAdapter
 import com.giftmusic.mugip.models.MusicItem
+import com.giftmusic.mugip.models.OtherUserOnMap
+import com.giftmusic.mugip.models.PostInformation
 import com.giftmusic.mugip.models.User
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.gson.Gson
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -27,7 +30,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.coroutines.CoroutineContext
 
-class ProfileActivity : BaseActivity(), CoroutineScope {
+class OtherProfileActivity : BaseActivity(), CoroutineScope {
     private lateinit var job: Job
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.IO + job
@@ -40,13 +43,16 @@ class ProfileActivity : BaseActivity(), CoroutineScope {
     private lateinit var historyList : ArrayList<MusicItem>
     private lateinit var followList : ArrayList<MusicItem>
 
+    private lateinit var postInformation : PostInformation
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_profile)
+        setContentView(R.layout.activity_other_profile)
         job = Job()
-        getMyInformation()
-        getMyHistoryInformation()
-        getMyFollowInformation()
+        postInformation = intent.getSerializableExtra("postID") as PostInformation
+        getOtherUserInformation(postInformation.userID)
+        getOtherUserHistoryInformation(postInformation.userID)
+        getOtherUserFollowInformation(postInformation.userID)
 
         val backButton = findViewById<ImageView>(R.id.back_to_map_from_profile)
         backButton.setOnClickListener {
@@ -59,28 +65,29 @@ class ProfileActivity : BaseActivity(), CoroutineScope {
             val intent = Intent(this, AlarmActivity::class.java)
             startActivity(intent)
         }
-
-        val settingButton = findViewById<Button>(R.id.setting_button)
-        settingButton.setOnClickListener {
-
+        
+        // 팔로우 버튼
+        val followingButton = findViewById<Button>(R.id.following_button)
+        followingButton.setOnClickListener{
+            followingUser(postInformation.userID)
         }
 
-        viewPager2 = findViewById(R.id.my_profile_tab_pager)
-        tabLayout = findViewById(R.id.my_profile_tab_layout)
+        viewPager2 = findViewById(R.id.other_user_tab_pager)
+        tabLayout = findViewById(R.id.other_user_tab_layout)
         viewPager2.adapter = ProfileFragmentStateAdapter(this, historyList, followList)
         TabLayoutMediator(tabLayout, viewPager2){
                 tab, position -> tab.text = tabTextList[position]
         }.attach()
     }
 
-    private fun getMyInformation(){
-        progressOn("사용자 정보 불러오는 중...")
-        var loadingFailed = true
+    private fun followingUser(userID: Int) {
+        progressOn("팔로우 요청을 처리하는 중...")
+        var followFailed = true
         val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
         var errorMessage = ""
 
         launch {
-            val url = URL(BuildConfig.server_url + "/user/")
+            val url = URL(BuildConfig.server_url + "/follow/user/" + userID)
             val conn = url.openConnection() as HttpURLConnection
             try {
                 conn.requestMethod = "GET"
@@ -90,6 +97,69 @@ class ProfileActivity : BaseActivity(), CoroutineScope {
                 conn.doInput = true
                 conn.connectTimeout = 5000
                 conn.readTimeout = 5000
+
+                when(conn.responseCode){
+                    200 -> {
+                        val inputStream = conn.inputStream
+                        if(inputStream != null){
+                            val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
+                            val responseJson = JSONObject(returnBody.trim())
+                            if(responseJson.has("success") && responseJson.getBoolean("success")){
+                                followFailed = false
+                            }
+                        }
+                    }
+                    else -> errorMessage = conn.responseCode.toString()
+                }
+            }
+            catch (e : SocketTimeoutException){
+                errorMessage = "연결 시간 초과 오류"
+            }
+            finally {
+                conn.disconnect()
+            }
+            withContext(Dispatchers.Main){
+                progressOFF()
+                if(!followFailed){
+                    showFailDialog("팔로우 성공", "사용자 팔로우에 성공하였습니다.")
+                } else if(errorMessage == "409"){
+                    showFailDialog("팔로우 실패", "자기 자신을 팔로우할 수 없습니다.")
+                }
+                else if(errorMessage.isNotEmpty()){
+                    showFailDialog("팔로우 실패", errorMessage)
+                }
+            }
+        }
+    }
+
+    private fun getOtherUserInformation(userID: Int){
+        progressOn("사용자 정보 불러오는 중...")
+        var loadingFailed = true
+        val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
+        var errorMessage = ""
+
+        launch {
+            val url = URL(BuildConfig.server_url + "/user/")
+            val conn = url.openConnection() as HttpURLConnection
+            try {
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.setRequestProperty("Accept", "application/json")
+                conn.setRequestProperty("Authorization", "Basic ${prefManager.getString("access_token", "")}")
+                conn.doInput = true
+                conn.doOutput = true
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+
+                val requestJson = HashMap<String, Int>()
+                requestJson["user_id"] = userID
+
+                conn.outputStream.use { os ->
+                    val input: ByteArray =
+                        Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                    os.write(input, 0, input.size)
+                    os.flush()
+                }
 
                 when(conn.responseCode){
                     200 -> {
@@ -146,14 +216,14 @@ class ProfileActivity : BaseActivity(), CoroutineScope {
         }
     }
 
-    private fun getMyHistoryInformation(){
+    private fun getOtherUserHistoryInformation(userID: Int){
         progressOn("사용자 업로드 기록 불러오는 중...")
         val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
         var errorMessage = ""
         historyList = ArrayList()
 
         launch {
-            val url = URL(BuildConfig.server_url + "/user/history")
+            val url = URL(BuildConfig.server_url + "/user/history/")
             val conn = url.openConnection() as HttpURLConnection
             val dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
@@ -163,8 +233,19 @@ class ProfileActivity : BaseActivity(), CoroutineScope {
                 conn.setRequestProperty("Accept", "application/json")
                 conn.setRequestProperty("Authorization", "Basic ${prefManager.getString("access_token", "")}")
                 conn.doInput = true
+                conn.doOutput = true
                 conn.connectTimeout = 5000
                 conn.readTimeout = 5000
+
+                val requestJson = HashMap<String, Int>()
+                requestJson["user_id"] = userID
+
+                conn.outputStream.use { os ->
+                    val input: ByteArray =
+                        Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                    os.write(input, 0, input.size)
+                    os.flush()
+                }
 
                 when(conn.responseCode){
                     200 -> {
@@ -207,14 +288,14 @@ class ProfileActivity : BaseActivity(), CoroutineScope {
         }
     }
 
-    private fun getMyFollowInformation(){
+    private fun getOtherUserFollowInformation(userID: Int){
         progressOn("사용자 팔로우 정보 불러오는 중...")
         val prefManager = this.getSharedPreferences("app", Context.MODE_PRIVATE)
         var errorMessage = ""
         followList = ArrayList()
 
         launch {
-            val url = URL(BuildConfig.server_url + "/user/follow")
+            val url = URL(BuildConfig.server_url + "/user/follow/")
             val conn = url.openConnection() as HttpURLConnection
             try {
                 conn.requestMethod = "GET"
@@ -222,8 +303,19 @@ class ProfileActivity : BaseActivity(), CoroutineScope {
                 conn.setRequestProperty("Accept", "application/json")
                 conn.setRequestProperty("Authorization", "Basic ${prefManager.getString("access_token", "")}")
                 conn.doInput = true
+                conn.doOutput = true
                 conn.connectTimeout = 5000
                 conn.readTimeout = 5000
+
+                val requestJson = HashMap<String, Int>()
+                requestJson["user_id"] = userID
+
+                conn.outputStream.use { os ->
+                    val input: ByteArray =
+                        Gson().toJson(requestJson).toByteArray(Charsets.UTF_8)
+                    os.write(input, 0, input.size)
+                    os.flush()
+                }
 
                 when(conn.responseCode){
                     200 -> {

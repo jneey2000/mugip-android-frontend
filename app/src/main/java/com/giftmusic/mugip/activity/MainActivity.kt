@@ -60,8 +60,10 @@ import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.giftmusic.mugip.adapter.SearchUserListViewAdapter
+import com.giftmusic.mugip.models.PostInformation
 import com.giftmusic.mugip.ui.SearchUserDialog
 import com.giftmusic.mugip.ui.cropCircleImage
+import java.io.Serializable
 
 
 class MainActivity : BaseActivity(), CoroutineScope,
@@ -75,7 +77,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
     private lateinit var openPostActivityButton : ImageView
     private val REQUEST_CODE = 1001
     private val otherUsers = ArrayList<OtherUserOnMap>() // 다른 사용자를 담기 위한 배열
-    private val otherUserMarkers = HashMap<MarkerOptions, Int>() // 다른 사용자의 마커를 담기 위한 배열
+    private val otherUserMarkers = HashMap<MarkerOptions, PostInformation>() // 다른 사용자의 마커를 담기 위한 배열
     private lateinit var map : GoogleMap // 구글 지도 객체
     private lateinit var currentLocation : Location // 현재 위치 객체
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -342,6 +344,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
             try {
                 conn.requestMethod = "GET"
                 conn.setRequestProperty("Content-Type", "application/json; utf-8")
+                conn.setRequestProperty("Content-Type", "application/json; utf-8")
                 conn.setRequestProperty("Accept", "application/json")
                 conn.setRequestProperty("Authorization", "Basic ${prefManager.getString("access_token", "")}")
                 conn.doInput = true
@@ -406,6 +409,10 @@ class MainActivity : BaseActivity(), CoroutineScope,
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
+        val postID = marker.tag as PostInformation
+        val intent = Intent(this, OtherProfileActivity::class.java)
+        intent.putExtra("postID", postID)
+        startActivity(intent)
         return true
     }
 
@@ -428,7 +435,6 @@ class MainActivity : BaseActivity(), CoroutineScope,
 
     // 다른 사용자의 위치 marker
     private fun addMarker(){
-        otherUserMarkers.clear()
         launch {
             otherUsers.map {
                 var bitmap : Bitmap
@@ -451,11 +457,16 @@ class MainActivity : BaseActivity(), CoroutineScope,
                 markerOptions.position(it.location)
                 markerOptions.draggable(true)
                 markerOptions.icon(BitmapDescriptorFactory.fromBitmap(cropCircleImage(bitmap)!!))
-                otherUserMarkers.put(markerOptions, it.postID)
+                otherUserMarkers.put(markerOptions, PostInformation(
+                    it.userID, it.postID, it.title, it.artist, it.thumbnail, it.tag
+                ))
             }
             withContext(Dispatchers.Main){
                 for(i in otherUserMarkers.keys){
-                    map.addMarker(i)
+                    val marker = map.addMarker(i)
+                    if(marker != null){
+                        marker.tag = otherUserMarkers[i]
+                    }
                 }
             }
         }
