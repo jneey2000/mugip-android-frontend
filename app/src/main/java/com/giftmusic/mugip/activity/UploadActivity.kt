@@ -5,11 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
 import android.widget.*
@@ -18,10 +16,7 @@ import androidx.core.app.ActivityCompat
 import com.giftmusic.mugip.BaseActivity
 import com.giftmusic.mugip.BuildConfig
 import com.giftmusic.mugip.R
-import com.giftmusic.mugip.adapter.SearchSongListViewAdapter
-import com.giftmusic.mugip.models.response.SearchMusicItem
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.google.gson.Gson
 import kotlinx.coroutines.*
 import org.json.JSONObject
@@ -38,13 +33,16 @@ class UploadActivity : BaseActivity(), CoroutineScope {
         get() = Dispatchers.IO + job
     private var sharedSwitchChecked = false
     private lateinit var locationManager: LocationManager
-    private lateinit var location : Location
+    private var location : Location? = null
+    private lateinit var mFusedLocationProviderClient : FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_upload)
         job = Job()
         locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+
         val addTagButton = findViewById<TextView>(R.id.add_tag_button)
         val addTagScrollView = findViewById<ScrollView>(R.id.tag_scroll_view)
         val uploadButton = findViewById<Button>(R.id.upload_button)
@@ -103,8 +101,26 @@ class UploadActivity : BaseActivity(), CoroutineScope {
             ) {
                 return@setOnClickListener
             } else{
-                location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)!!
+                if(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null){
+                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)!!
+                } else{
+                    val locationRequest = LocationRequest.create()
+                        .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                        .setInterval(300).setFastestInterval(300)
+                    val locationCallback = object : LocationCallback() {
+                        override fun onLocationResult(locationResult: LocationResult) {
+                            for(locationQuery in locationResult.locations){
+                                location = locationQuery
+                                mFusedLocationProviderClient.removeLocationUpdates(this)
+                            }
+                        }
+                    }
+                    mFusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null)
+                }
 
+                if (location == null){
+                    return@setOnClickListener
+                }
 
                 progressOn("업로드 하는 중...")
                 var uploadFailed = true
@@ -128,8 +144,8 @@ class UploadActivity : BaseActivity(), CoroutineScope {
                         requestJson["title"] = intent.getStringExtra("title").toString()
                         requestJson["artist"] = intent.getStringExtra("artist").toString()
                         requestJson["thumbnailURL"] = intent.getStringExtra("thumbnailURL").toString()
-                        requestJson["latitude"] = location.latitude
-                        requestJson["longitude"] = location.longitude
+                        requestJson["latitude"] = location!!.latitude
+                        requestJson["longitude"] = location!!.longitude
                         requestJson["shareLocation"] = sharedSwitchChecked
                         requestJson["tag"] = addTagButton.text.substring(2, addTagButton.text.length).trim()
 
