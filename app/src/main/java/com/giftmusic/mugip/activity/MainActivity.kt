@@ -46,6 +46,7 @@ import java.net.URL
 import kotlin.coroutines.CoroutineContext
 import com.google.gson.reflect.TypeToken.getArray
 import android.graphics.drawable.ColorDrawable
+import android.os.CountDownTimer
 import android.text.Editable
 import android.text.TextWatcher
 
@@ -121,16 +122,20 @@ class MainActivity : BaseActivity(), CoroutineScope,
         searchEditText = findViewById(R.id.user_search_edittext)
         searchEditText.addTextChangedListener(
             object : TextWatcher {
-                override fun afterTextChanged(p0: Editable?) {
+                var timer: CountDownTimer? = null
 
-                }
+                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
-                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
 
-                }
-
-                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                    getSearchResult(p0.toString())
+                override fun afterTextChanged(editable: Editable?) {
+                    timer?.cancel()
+                    timer = object : CountDownTimer(1000, 1500) {
+                        override fun onTick(millisUntilFinished: Long) {}
+                        override fun onFinish() {
+                            getSearchResult(editable.toString())
+                        }
+                    }.start()
                 }
             }
         )
@@ -154,7 +159,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
 
         searchResultView = findViewById(R.id.search_user_result)
         searchResultView.layoutManager = LinearLayoutManager(this@MainActivity, RecyclerView.VERTICAL, false)
-        searchResultView.adapter = SearchUserListViewAdapter(arrayListOf())
+        searchResultView.adapter = SearchUserListViewAdapter(this@MainActivity, arrayListOf())
 
         // 하단 메뉴 버튼
         openProfileActivityButton = findViewById(R.id.ic_profile)
@@ -246,11 +251,11 @@ class MainActivity : BaseActivity(), CoroutineScope,
                             searchResultView.visibility = View.GONE
                         }
                         searchResult.isEmpty() -> {
-                            searchResultView.adapter = SearchUserListViewAdapter(arrayListOf(SearchUserItem(-1, "검색 결과가 존재하지 않습니다", "")))
+                            searchResultView.adapter = SearchUserListViewAdapter(this@MainActivity, arrayListOf(SearchUserItem(-1, "검색 결과가 존재하지 않습니다", "")))
                             searchResultView.visibility = View.VISIBLE
                         }
                         else -> {
-                            searchResultView.adapter = SearchUserListViewAdapter(searchResult)
+                            searchResultView.adapter = SearchUserListViewAdapter(this@MainActivity, searchResult)
                             searchResultView.visibility = View.VISIBLE
                         }
                     }

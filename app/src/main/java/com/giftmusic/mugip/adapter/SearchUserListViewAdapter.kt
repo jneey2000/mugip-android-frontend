@@ -1,6 +1,8 @@
 package com.giftmusic.mugip.adapter
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,9 +10,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.giftmusic.mugip.R
+import com.giftmusic.mugip.activity.OtherProfileActivity
 import com.giftmusic.mugip.models.response.SearchUserItem
 
-class SearchUserListViewAdapter(private val mData : ArrayList<SearchUserItem>) : RecyclerView.Adapter<SearchUserListViewAdapter.ItemViewHolder>() {
+class SearchUserListViewAdapter(private val mContext : Context, private val mData : ArrayList<SearchUserItem>) : RecyclerView.Adapter<SearchUserListViewAdapter.ItemViewHolder>() {
     inner class ItemViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!){
         private val otherUserProfile : ImageView = itemView!!.findViewById(R.id.user_search_item_profile) as ImageView
         private val otherUserNickname : TextView = itemView!!.findViewById(R.id.user_search_item_nickname) as TextView
@@ -34,6 +37,13 @@ class SearchUserListViewAdapter(private val mData : ArrayList<SearchUserItem>) :
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         holder.bind(mData[position])
+        holder.itemView.setOnClickListener {
+            if(mData[position].userID > 0 && mData[position].userEmail.isNotEmpty()){
+                val intent = Intent(mContext, OtherProfileActivity::class.java)
+                intent.putExtra("userID", mData[position].userID)
+                mContext.startActivity(intent)
+            }
+        }
     }
 
     override fun getItemCount(): Int {

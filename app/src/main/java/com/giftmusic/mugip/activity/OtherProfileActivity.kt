@@ -43,17 +43,21 @@ class OtherProfileActivity : BaseActivity(), CoroutineScope {
     private lateinit var historyList : ArrayList<MusicItem>
     private lateinit var followList : ArrayList<MusicItem>
 
-    private lateinit var postInformation : PostInformation
+    private var userID : Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_other_profile)
         job = Job()
-        postInformation = intent.getSerializableExtra("postID") as PostInformation
-        getOtherUserInformation(postInformation.userID)
-        getOtherUserHistoryInformation(postInformation.userID)
-        getOtherUserFollowInformation(postInformation.userID)
-
+        if ("postID" in intent.extras!!.keySet()){
+            val postInformation = intent.getSerializableExtra("postID") as PostInformation
+            userID = postInformation.userID
+        } else if("userID" in intent.extras!!.keySet()){
+            userID = intent.getIntExtra("userID", -1)
+        }
+        getOtherUserInformation(userID)
+        getOtherUserHistoryInformation(userID)
+        getOtherUserFollowInformation(userID)
         val backButton = findViewById<ImageView>(R.id.back_to_map_from_profile)
         backButton.setOnClickListener {
             finish()
@@ -69,7 +73,7 @@ class OtherProfileActivity : BaseActivity(), CoroutineScope {
         // 팔로우 버튼
         val followingButton = findViewById<Button>(R.id.following_button)
         followingButton.setOnClickListener{
-            followingUser(postInformation.userID)
+            followingUser(userID)
         }
 
         viewPager2 = findViewById(R.id.other_user_tab_pager)
