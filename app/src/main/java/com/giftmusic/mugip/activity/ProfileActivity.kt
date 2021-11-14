@@ -167,7 +167,7 @@ class ProfileActivity : BaseActivity(), CoroutineScope {
                 conn.readTimeout = 5000
 
                 when(conn.responseCode){
-                    200 -> {
+                    200, 307 -> {
                         val inputStream = conn.inputStream
                         if(inputStream != null){
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
@@ -226,7 +226,7 @@ class ProfileActivity : BaseActivity(), CoroutineScope {
                 conn.readTimeout = 5000
 
                 when(conn.responseCode){
-                    200 -> {
+                    200, 307 -> {
                         val inputStream = conn.inputStream
                         if(inputStream != null){
                             val returnBody = conn.inputStream.bufferedReader().use(BufferedReader::readText)
