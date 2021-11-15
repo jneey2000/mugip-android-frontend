@@ -25,8 +25,6 @@ import com.giftmusic.mugip.R
 import com.giftmusic.mugip.models.OtherUserOnMap
 import com.giftmusic.mugip.models.User
 import com.giftmusic.mugip.models.response.SearchUserItem
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
@@ -46,6 +44,7 @@ import java.net.URL
 import kotlin.coroutines.CoroutineContext
 import com.google.gson.reflect.TypeToken.getArray
 import android.graphics.drawable.ColorDrawable
+import android.location.LocationManager
 import android.os.CountDownTimer
 import android.text.Editable
 import android.text.TextWatcher
@@ -64,6 +63,7 @@ import com.giftmusic.mugip.adapter.SearchUserListViewAdapter
 import com.giftmusic.mugip.models.PostInformation
 import com.giftmusic.mugip.ui.SearchUserDialog
 import com.giftmusic.mugip.ui.cropCircleImage
+import com.google.android.gms.location.*
 import java.io.Serializable
 
 
@@ -80,8 +80,10 @@ class MainActivity : BaseActivity(), CoroutineScope,
     private val otherUsers = ArrayList<OtherUserOnMap>() // 다른 사용자를 담기 위한 배열
     private val otherUserMarkers = HashMap<MarkerOptions, PostInformation>() // 다른 사용자의 마커를 담기 위한 배열
     private lateinit var map : GoogleMap // 구글 지도 객체
-    private lateinit var currentLocation : Location // 현재 위치 객체
+    private var currentLocation : Location? = null // 현재 위치 객체
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    private lateinit var locationManager : LocationManager
+
 
     private lateinit var searchEditText : EditText
     private lateinit var searchResultView : RecyclerView
@@ -94,6 +96,8 @@ class MainActivity : BaseActivity(), CoroutineScope,
         job = Job()
         setContentView(R.layout.activity_main)
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+        locationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
 
         val fragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         fragment.getMapAsync(this)
@@ -174,7 +178,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
 
         }
         openMapActivityButton.setOnClickListener {
-
+            fetchLocation()
         }
 
         openPostActivityButton.setOnClickListener {
@@ -430,7 +434,7 @@ class MainActivity : BaseActivity(), CoroutineScope,
             task.addOnSuccessListener {
                 if(it != null){
                     currentLocation = it
-                    val latLng = LatLng(currentLocation.latitude, currentLocation.longitude)
+                    val latLng = LatLng(currentLocation!!.latitude, currentLocation!!.longitude)
                     map.moveCamera(CameraUpdateFactory.newLatLng(latLng))
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 14f))
                 }
