@@ -25,7 +25,7 @@ class HistoryFragment(private val musicList : ArrayList<MusicItem>) : Fragment()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val listView = view.findViewById<RecyclerView>(R.id.music_history)
-        val historyListAdapter = HistoryListAdapter(musicList)
+        val historyListAdapter = HistoryListAdapter(musicList.sortedByDescending { it.createdAt })
 
         listView.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         listView.adapter = historyListAdapter
